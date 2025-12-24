@@ -20,43 +20,62 @@ export async function fetchTickerMappings(): Promise<
   const cached = cache.get<Record<string, TickerMapping>>(cacheKey);
 
   if (cached) {
+    console.log("[TICKER-LOOKUP] Using cached ticker mappings");
     return cached;
   }
 
-  const response = await fetch(`${SEC_BASE_URL}/files/company_tickers.json`, {
-    headers: {
-      "User-Agent": USER_AGENT,
-    },
-  });
+  console.log("[TICKER-LOOKUP] Fetching ticker mappings from SEC...");
+  
+  try {
+    const response = await fetch(`${SEC_BASE_URL}/files/company_tickers.json`, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch ticker mappings from SEC");
+    console.log("[TICKER-LOOKUP] Response status:", response.status, response.statusText);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ticker mappings from SEC: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("[TICKER-LOOKUP] Successfully fetched", Object.keys(data).length, "ticker mappings");
+
+    // Cache for 7 days (this data rarely changes)
+    cache.set(cacheKey, data, 7 * 24 * 60 * 60 * 1000);
+
+    return data;
+  } catch (error) {
+    console.error("[TICKER-LOOKUP] Fetch error:", error);
+    throw error;
   }
-
-  const data = await response.json();
-
-  // Cache for 7 days (this data rarely changes)
-  cache.set(cacheKey, data, 7 * 24 * 60 * 60 * 1000);
-
-  return data;
 }
 
 /**
  * Search for a ticker and return CIK
  */
 export async function searchTickerCIK(ticker: string): Promise<string | null> {
+  console.log("[TICKER-LOOKUP] Searching for ticker:", ticker);
+  
   const mappings = await fetchTickerMappings();
   const normalizedTicker = ticker.toUpperCase().trim();
+
+  console.log("[TICKER-LOOKUP] Normalized ticker:", normalizedTicker);
 
   // Search through all mappings
   for (const key in mappings) {
     const mapping = mappings[key];
     if (mapping.ticker === normalizedTicker) {
       // Pad CIK to 10 digits with leading zeros
-      return mapping.cik_str.toString().padStart(10, "0");
+      const cik = mapping.cik_str.toString().padStart(10, "0");
+      console.log("[TICKER-LOOKUP] Found CIK for", normalizedTicker, ":", cik);
+      return cik;
     }
   }
 
+  console.log("[TICKER-LOOKUP] No CIK found for ticker:", normalizedTicker);
   return null;
 }
 
