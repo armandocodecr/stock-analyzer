@@ -24,9 +24,12 @@ import {
   Users,
   Bell,
   Brain,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import type { Params } from "next/dist/server/request/params";
+
+const AI_ENABLED = process.env.NEXT_PUBLIC_ENABLE_AI_ANALYSIS === "true";
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
@@ -206,12 +209,49 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                   </Suspense>
                 ),
               },
-              {
-                id: "ai-analysis",
-                label: "IA",
-                icon: <Brain />,
-                content: <AIAnalysis data={stockData} ticker={normalizedTicker} />,
-              },
+              ...(AI_ENABLED
+                ? [
+                    {
+                      id: "ai-analysis",
+                      label: "IA",
+                      icon: <Brain />,
+                      content: (
+                        <AIAnalysis
+                          data={stockData}
+                          ticker={normalizedTicker}
+                        />
+                      ),
+                    },
+                  ]
+                : [
+                    {
+                      id: "ai-locked",
+                      label: "IA",
+                      icon: <Lock />,
+                      content: (
+                        <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
+                          <Lock className="w-20 h-20 text-gray-600 mx-auto mb-6" />
+                          <h3 className="text-2xl font-bold text-gray-400 mb-3">
+                            AI Analysis Disabled
+                          </h3>
+                          <p className="text-gray-500 text-base max-w-xl mx-auto mb-6">
+                            The AI investment analysis feature is currently
+                            disabled. To enable it, set{" "}
+                            <code className="text-purple-400 bg-gray-900/50 px-2 py-1 rounded">
+                              NEXT_PUBLIC_ENABLE_AI_ANALYSIS=true
+                            </code>{" "}
+                            in your environment variables and configure your
+                            OpenAI API key.
+                          </p>
+                          <div className="text-sm text-gray-600">
+                            Check the{" "}
+                            <code className="text-blue-400">env.example</code>{" "}
+                            file for configuration details.
+                          </div>
+                        </div>
+                      ),
+                    },
+                  ]),
             ]}
           />
         </div>

@@ -17,12 +17,10 @@ export default function Home() {
             Stock Analyzer
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-2">
-            Analiza empresas que cotizan en bolsa con datos financieros en
-            tiempo real
+            Analyze publicly traded companies with real-time financial data
           </p>
           <p className="text-sm text-gray-400">
-            Información de precios, métricas fundamentales, valoración y
-            noticias
+            Price information, fundamental metrics, valuation, and news
           </p>
         </div>
 
@@ -38,11 +36,10 @@ export default function Home() {
               <TrendingUp className="w-6 h-6 text-green-400" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              Datos en Tiempo Real
+              Real-Time Data
             </h3>
             <p className="text-sm text-gray-300">
-              Precios actualizados y métricas fundamentales de empresas
-              cotizadas en bolsa.
+              Up-to-date prices and fundamental metrics for publicly traded companies.
             </p>
           </div>
 
@@ -51,11 +48,10 @@ export default function Home() {
               <DollarSign className="w-6 h-6 text-purple-400" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              Valoración DCF
+              DCF Valuation
             </h3>
             <p className="text-sm text-gray-300">
-              Cálculo de valor intrínseco usando modelo DCF simplificado basado
-              en Free Cash Flow.
+              Intrinsic value calculation using simplified DCF model based on Free Cash Flow.
             </p>
           </div>
 
@@ -64,10 +60,10 @@ export default function Home() {
               <Newspaper className="w-6 h-6 text-blue-400" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              Noticias Actualizadas
+              Latest News
             </h3>
             <p className="text-sm text-gray-300">
-              Últimas noticias financieras relevantes para cada empresa.
+              Recent financial news relevant to each company.
             </p>
           </div>
         </div>
@@ -86,8 +82,8 @@ export default function Home() {
             </a>
           </p>
           <p className="text-xs text-gray-400">
-            ⚠️ Esta herramienta es solo para fines educativos e informativos. No
-            constituye asesoramiento financiero.
+            ⚠️ This tool is for educational and informational purposes only. It does not
+            constitute financial advice.
           </p>
         </div>
       </div>
