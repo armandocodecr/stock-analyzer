@@ -45,18 +45,29 @@ export async function generateMetadata(props: {
 
 async function getStockData(ticker: string): Promise<StockData | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    // In Vercel/production, use the deployment URL or relative path
+    // For local development, use localhost
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    
+    console.log("[STOCK PAGE] Fetching stock data for:", ticker, "from:", baseUrl);
+    
     const response = await fetch(`${baseUrl}/api/stock/${ticker}`, {
       next: { revalidate: 86400 }, // Cache for 24 hours
     });
+
+    console.log("[STOCK PAGE] Response status:", response.status);
 
     if (!response.ok) {
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("[STOCK PAGE] Successfully fetched stock data");
+    return data;
   } catch (error) {
-    console.error("Error fetching stock data:", error);
+    console.error("[STOCK PAGE] Error fetching stock data:", error);
     return null;
   }
 }
