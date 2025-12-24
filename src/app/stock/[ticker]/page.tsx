@@ -10,6 +10,7 @@ import HistoricalData from "@/components/stock/HistoricalData";
 import QuarterlyTrends from "@/components/stock/QuarterlyTrends";
 import MaterialEvents from "@/components/stock/MaterialEvents";
 import InsiderActivity from "@/components/stock/InsiderActivity";
+import AIAnalysis from "@/components/stock/AIAnalysis";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Tabs from "@/components/ui/Tabs";
 import {
@@ -22,6 +23,7 @@ import {
   FileText,
   Users,
   Bell,
+  Brain,
 } from "lucide-react";
 import Link from "next/link";
 import type { Params } from "next/dist/server/request/params";
@@ -203,6 +205,12 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                     />
                   </Suspense>
                 ),
+              },
+              {
+                id: "ai-analysis",
+                label: "IA",
+                icon: <Brain />,
+                content: <AIAnalysis data={stockData} ticker={normalizedTicker} />,
               },
             ]}
           />
