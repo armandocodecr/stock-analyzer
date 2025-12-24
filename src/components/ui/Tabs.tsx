@@ -24,7 +24,7 @@ export default function Tabs({ tabs, defaultTab, className }: TabsProps) {
   return (
     <div className={clsx("w-full", className)}>
       {/* Tab Headers */}
-      <div className="border-b border-gray-700 overflow-x-auto">
+      <div className="border-b border-gray-700 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-900/60 hover:scrollbar-thumb-blue-800/80">
         <div className="flex gap-1 min-w-max">
           {tabs.map((tab) => (
             <button
