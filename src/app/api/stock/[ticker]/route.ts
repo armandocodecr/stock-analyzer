@@ -43,6 +43,8 @@ export async function GET(
     const params = await segmentData.params;
     const ticker = params.ticker as string;
 
+    console.log("[API] Received request for ticker:", ticker);
+
     if (!ticker) {
       return NextResponse.json(
         { error: "Ticker symbol is required" },
@@ -51,11 +53,14 @@ export async function GET(
     }
 
     const normalizedTicker = ticker.toUpperCase().trim();
+    console.log("[API] Normalized ticker:", normalizedTicker);
 
     // Fetch data ONLY from SEC EDGAR
     const secData = await extractSECMetrics(normalizedTicker);
+    console.log("[API] SEC data received:", secData ? "success" : "null");
 
     if (!secData) {
+      console.log("[API] No SEC data found for ticker:", normalizedTicker);
       return NextResponse.json(
         {
           error: "Stock data not available",
@@ -142,7 +147,12 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching SEC data:", error);
+    console.error("[API] Error fetching SEC data:", error);
+    console.error("[API] Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
@@ -161,6 +171,7 @@ export async function GET(
       {
         error: "Failed to fetch stock data",
         message: errorMessage,
+        debug: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       { status: statusCode }
     );

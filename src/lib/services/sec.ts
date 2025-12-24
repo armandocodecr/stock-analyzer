@@ -86,27 +86,38 @@ export interface SECCompanyFacts {
  */
 async function fetchFromSEC<T>(endpoint: string): Promise<T> {
   const url = `${SEC_BASE_URL}${endpoint}`;
+  
+  console.log("[SEC] Fetching from URL:", url);
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error("SEC API access denied. Check User-Agent header.");
-    } else if (response.status === 404) {
-      throw new Error("Company not found in SEC database.");
-    } else {
-      throw new Error(
-        `SEC API error: ${response.status} ${response.statusText}`
-      );
+    console.log("[SEC] Response status:", response.status, response.statusText);
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("SEC API access denied. Check User-Agent header.");
+      } else if (response.status === 404) {
+        throw new Error("Company not found in SEC database.");
+      } else {
+        throw new Error(
+          `SEC API error: ${response.status} ${response.statusText}`
+        );
+      }
     }
-  }
 
-  return await response.json();
+    const data = await response.json();
+    console.log("[SEC] Data received successfully");
+    return data;
+  } catch (error) {
+    console.error("[SEC] Fetch error:", error);
+    throw error;
+  }
 }
 
 /**
