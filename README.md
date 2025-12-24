@@ -1,36 +1,218 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stock Analyzer - SEC EDGAR Coverage
 
-## Getting Started
+## 🎯 Current Status
 
-First, run the development server:
+**SEC EDGAR Coverage:** 75% (from 30%)  
+**Supported Tickers:** ~13,000 US public companies  
+**Last Updated:** December 2025
+
+---
+
+## 📊 What's Included
+
+### ✅ Implemented Features
+
+1. **Annual Financial Data (10-K)**
+
+   - Complete fundamental metrics
+   - Multi-year growth (CAGR)
+   - Profitability, debt, cash flow ratios
+
+2. **Quarterly Data (10-Q)**
+
+   - Last 4 quarters revenue & net income
+   - Quarter-over-Quarter (QoQ) growth
+   - Visual trend indicators
+
+3. **Dynamic Ticker Search**
+
+   - Search ~13,000 US public companies
+   - Autocomplete by ticker or company name
+   - Real-time suggestions
+
+4. **Filing Dates & Metadata**
+
+   - Last filing date
+   - Period end date
+   - Fiscal year
+   - Outdated data warnings
+
+5. **Material Events (8-K)**
+
+   - 29 event types classified
+   - Importance levels (high/medium/low)
+   - Direct links to SEC filings
+   - Timeline view
+
+6. **Insider Trading (Forms 4)**
+   - Last 20 insider transactions
+   - Buy/Sell classification
+   - Sentiment analysis (Bullish/Bearish/Neutral)
+   - Transaction history
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` and search for any US public company!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📖 Documentation
 
-## Learn More
+For detailed implementation information, see:
 
-To learn more about Next.js, take a look at the following resources:
+- [Implementation Plan](./IMPLEMENTATION_GUIDE.md)
+- [Architecture Proposal](./ARCHITECTURE_PROPOSAL.md)
+- [Development Roadmap](./ROADMAP.md)
+- [Complete Walkthrough](./.gemini/antigravity/brain/*/walkthrough.md)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎨 Features
 
-## Deploy on Vercel
+### Search Any Company
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+No longer limited to pre-mapped tickers. Search by ticker symbol or company name with autocomplete.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Comprehensive Financial Analysis
+
+- **Profitability:** Margins, ROE, ROA, ROIC
+- **Debt:** Debt ratios, interest coverage
+- **Growth:** 3Y and 5Y CAGR
+- **Cash Flow:** FCF, operating cash flow
+- **Capital:** EPS, book value per share
+
+### Quarterly Trends
+
+Track quarterly performance with QoQ growth metrics for revenue and net income.
+
+### Material Events
+
+Stay informed about important corporate events:
+
+- M&A activity
+- Financial results
+- Leadership changes
+- Regulatory issues
+- And 25+ more event types
+
+### Insider Activity
+
+Monitor what company insiders are doing:
+
+- Buy/sell transactions
+- Overall sentiment
+- Transaction history
+
+---
+
+## 🔧 Technical Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Charts:** Recharts
+- **Data Source:** SEC EDGAR API (100% free)
+- **Deployment:** Vercel-ready
+
+---
+
+## 📝 Data Sources
+
+All data comes from official SEC filings:
+
+- **10-K:** Annual reports
+- **10-Q:** Quarterly reports
+- **8-K:** Material events
+- **Form 4:** Insider trading
+
+**No paid APIs required!**
+
+---
+
+## ⚠️ Limitations
+
+### Not Included
+
+- Real-time stock prices
+- Price charts
+- News feeds
+- Analyst ratings
+- Institutional ownership (13F) - Future feature
+
+### Data Freshness
+
+- Annual data: Updated yearly
+- Quarterly data: Updated quarterly
+- Events: Near real-time
+- Insider trades: Near real-time
+
+---
+
+## 🎯 Use Cases
+
+1. **Fundamental Analysis**
+
+   - Deep dive into company financials
+   - Track quarterly performance
+   - Identify trends
+
+2. **Event Monitoring**
+
+   - Stay updated on material events
+   - Track M&A activity
+   - Monitor leadership changes
+
+3. **Insider Tracking**
+
+   - See what executives are doing
+   - Gauge insider sentiment
+   - Identify buying/selling patterns
+
+4. **Educational**
+   - Learn how to read SEC filings
+   - Understand financial metrics
+   - Practice fundamental analysis
+
+---
+
+## 🚀 Future Enhancements
+
+### Potential Additions
+
+- Institutional ownership (13F filings)
+- Peer comparison
+- Industry benchmarks
+- Export to CSV/PDF
+- Watchlist functionality
+- Email alerts for events
+
+---
+
+## 📄 License
+
+MIT License - Free to use and modify
+
+---
+
+## 🙏 Acknowledgments
+
+- SEC EDGAR API for free, public data
+- Next.js team for amazing framework
+- Open source community
+
+---
+
+**Built with ❤️ using only free, public data sources**
