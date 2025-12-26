@@ -3,10 +3,36 @@
 import { StockData } from "@/types/stock";
 import { formatLargeNumber, formatPercentage } from "@/lib/utils/formatters";
 import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 interface QuarterlyTrendsProps {
   data: StockData;
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl">
+        <p className="text-sm font-semibold text-gray-200 mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: {formatLargeNumber(entry.value)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function QuarterlyTrends({ data }: QuarterlyTrendsProps) {
   if (!data.quarterly) {
@@ -99,6 +125,46 @@ export default function QuarterlyTrends({ data }: QuarterlyTrendsProps) {
         <h3 className="text-md font-semibold text-gray-200 mb-3">
           Revenue by Quarter
         </h3>
+
+        {/* Quarterly Revenue Chart */}
+        <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={[...quarterly.quarterlyRevenue]
+                .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
+                .map((q) => ({
+                  quarter: q.quarter,
+                  value: q.value,
+                }))}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="quarter" 
+                stroke="#9CA3AF"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="#9CA3AF"
+                style={{ fontSize: '12px' }}
+                tickFormatter={(value) => formatLargeNumber(value)}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                name="Revenue"
+                stroke="#3B82F6"
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Quarterly Revenue Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -135,6 +201,46 @@ export default function QuarterlyTrends({ data }: QuarterlyTrendsProps) {
         <h3 className="text-md font-semibold text-gray-200 mb-3">
           Net Income by Quarter
         </h3>
+
+        {/* Quarterly Net Income Chart */}
+        <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={[...quarterly.quarterlyNetIncome]
+                .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
+                .map((q) => ({
+                  quarter: q.quarter,
+                  value: q.value,
+                }))}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="quarter" 
+                stroke="#9CA3AF"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="#9CA3AF"
+                style={{ fontSize: '12px' }}
+                tickFormatter={(value) => formatLargeNumber(value)}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                name="Net Income"
+                stroke="#10B981"
+                strokeWidth={2}
+                dot={{ fill: '#10B981', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Quarterly Net Income Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

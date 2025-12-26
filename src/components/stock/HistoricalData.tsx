@@ -3,10 +3,52 @@
 import { StockData } from "@/types/stock";
 import { formatLargeNumber } from "@/lib/utils/formatters";
 import { TrendingUp } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 interface HistoricalDataProps {
   data: StockData;
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl">
+        <p className="text-sm font-semibold text-gray-200 mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: {formatLargeNumber(entry.value)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+// Función para eliminar duplicados manteniendo el registro más reciente por año fiscal
+const deduplicateByFiscalYear = <T extends { fiscalYear: number; endDate: string }>(
+  data: T[]
+): T[] => {
+  const map = new Map<number, T>();
+  
+  data.forEach((item) => {
+    const existing = map.get(item.fiscalYear);
+    if (!existing || new Date(item.endDate) > new Date(existing.endDate)) {
+      map.set(item.fiscalYear, item);
+    }
+  });
+  
+  return Array.from(map.values()).sort((a, b) => a.fiscalYear - b.fiscalYear);
+};
 
 export default function HistoricalData({ data }: HistoricalDataProps) {
   const historical = data.historicalAnnual;
@@ -14,6 +56,13 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
   if (!historical) {
     return null;
   }
+
+  // Deduplicar todos los datos históricos
+  const uniqueRevenue = historical.revenue ? deduplicateByFiscalYear(historical.revenue) : [];
+  const uniqueNetIncome = historical.netIncome ? deduplicateByFiscalYear(historical.netIncome) : [];
+  const uniqueTotalAssets = historical.totalAssets ? deduplicateByFiscalYear(historical.totalAssets) : [];
+  const uniqueOperatingCashFlow = historical.operatingCashFlow ? deduplicateByFiscalYear(historical.operatingCashFlow) : [];
+  const uniqueFreeCashFlow = historical.freeCashFlow ? deduplicateByFiscalYear(historical.freeCashFlow) : [];
 
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
@@ -28,11 +77,49 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
 
       <div className="space-y-8">
         {/* Revenue History */}
-        {historical.revenue && historical.revenue.length > 0 && (
+        {uniqueRevenue.length > 0 && (
           <div>
             <h3 className="text-md font-semibold text-gray-200 mb-3">
               Revenue (Annual)
             </h3>
+            
+            {/* Revenue Chart */}
+            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={uniqueRevenue.map((item) => ({
+                      year: `FY ${item.fiscalYear}`,
+                      value: item.value,
+                    }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => formatLargeNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Revenue"
+                    stroke="#8B5CF6"
+                    strokeWidth={2}
+                    dot={{ fill: '#8B5CF6', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Revenue Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -49,7 +136,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {historical.revenue.map((item, idx) => (
+                  {uniqueRevenue.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -72,11 +159,49 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
         )}
 
         {/* Net Income History */}
-        {historical.netIncome && historical.netIncome.length > 0 && (
+        {uniqueNetIncome.length > 0 && (
           <div>
             <h3 className="text-md font-semibold text-gray-200 mb-3">
               Net Income (Annual)
             </h3>
+
+            {/* Net Income Chart */}
+            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={uniqueNetIncome.map((item) => ({
+                      year: `FY ${item.fiscalYear}`,
+                      value: item.value,
+                    }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => formatLargeNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Net Income"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10B981', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Net Income Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -93,7 +218,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {historical.netIncome.map((item, idx) => (
+                  {uniqueNetIncome.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -116,11 +241,49 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
         )}
 
         {/* Total Assets History */}
-        {historical.totalAssets && historical.totalAssets.length > 0 && (
+        {uniqueTotalAssets.length > 0 && (
           <div>
             <h3 className="text-md font-semibold text-gray-200 mb-3">
               Total Assets (Annual)
             </h3>
+
+            {/* Total Assets Chart */}
+            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={uniqueTotalAssets.map((item) => ({
+                      year: `FY ${item.fiscalYear}`,
+                      value: item.value,
+                    }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => formatLargeNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Total Assets"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    dot={{ fill: '#3B82F6', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Total Assets Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -137,7 +300,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {historical.totalAssets.map((item, idx) => (
+                  {uniqueTotalAssets.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -160,11 +323,49 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
         )}
 
         {/* Operating Cash Flow History */}
-        {historical.operatingCashFlow && historical.operatingCashFlow.length > 0 && (
+        {uniqueOperatingCashFlow.length > 0 && (
           <div>
             <h3 className="text-md font-semibold text-gray-200 mb-3">
               Operating Cash Flow (Annual)
             </h3>
+
+            {/* Operating Cash Flow Chart */}
+            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={uniqueOperatingCashFlow.map((item) => ({
+                      year: `FY ${item.fiscalYear}`,
+                      value: item.value,
+                    }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => formatLargeNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Operating Cash Flow"
+                    stroke="#F59E0B"
+                    strokeWidth={2}
+                    dot={{ fill: '#F59E0B', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Operating Cash Flow Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -181,7 +382,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {historical.operatingCashFlow.map((item, idx) => (
+                  {uniqueOperatingCashFlow.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -204,11 +405,49 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
         )}
 
         {/* Free Cash Flow History */}
-        {historical.freeCashFlow && historical.freeCashFlow.length > 0 && (
+        {uniqueFreeCashFlow.length > 0 && (
           <div>
             <h3 className="text-md font-semibold text-gray-200 mb-3">
               Free Cash Flow (Annual)
             </h3>
+
+            {/* Free Cash Flow Chart */}
+            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={uniqueFreeCashFlow.map((item) => ({
+                      year: `FY ${item.fiscalYear}`,
+                      value: item.value,
+                    }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    style={{ fontSize: '12px' }}
+                    tickFormatter={(value) => formatLargeNumber(value)}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Free Cash Flow"
+                    stroke="#EC4899"
+                    strokeWidth={2}
+                    dot={{ fill: '#EC4899', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Free Cash Flow Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -225,7 +464,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {historical.freeCashFlow.map((item, idx) => (
+                  {uniqueFreeCashFlow.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
