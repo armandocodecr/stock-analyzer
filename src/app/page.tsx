@@ -70,17 +70,6 @@ export default function Home() {
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-400 mt-16 pt-8 border-t border-gray-700">
-          <p className="mb-2">
-            Powered by{" "}
-            <a
-              href="https://finnhub.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline"
-            >
-              Finnhub API
-            </a>
-          </p>
           <p className="text-xs text-gray-400">
             ⚠️ This tool is for educational and informational purposes only. It does not
             constitute financial advice.
