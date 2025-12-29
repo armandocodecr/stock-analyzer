@@ -11,6 +11,7 @@ import QuarterlyTrends from "@/components/stock/QuarterlyTrends";
 import MaterialEvents from "@/components/stock/MaterialEvents";
 import InsiderActivity from "@/components/stock/InsiderActivity";
 import AIAnalysis from "@/components/stock/AIAnalysis";
+import TradingViewChart from "@/components/stock/TradingViewChart";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Tabs from "@/components/ui/Tabs";
 import {
@@ -125,6 +126,9 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                 icon: <BarChart3 />,
                 content: (
                   <div className="space-y-6">
+                    {/* TradingView Chart */}
+                    <TradingViewChart ticker={normalizedTicker} />
+
                     {/* Key Financial Ratios */}
                     <FinancialRatios data={stockData} />
 
