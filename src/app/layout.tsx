@@ -8,11 +8,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Stock Analyzer - Análisis de Acciones en Tiempo Real",
+  title: "Stock Analyzer - Real-Time Stock Analysis",
   description:
-    "Analiza empresas que cotizan en bolsa con datos financieros en tiempo real, métricas fundamentales, valoración DCF y noticias actualizadas.",
+    "Analyze publicly traded companies with real-time financial data, fundamental metrics, DCF valuation, and updated news.",
   keywords:
-    "stock analysis, análisis financiero, valoración acciones, DCF, inversión",
+    "stock analysis, financial analysis, stock valuation, DCF, investment",
 };
 
 export default function RootLayout({

@@ -36,13 +36,13 @@ export default function AIAnalysis({ data, ticker }: AIAnalysisProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Error al generar análisis");
+        throw new Error(errorData.error || "Error generating analysis");
       }
 
       const result = await response.json();
       setAnalysis(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }

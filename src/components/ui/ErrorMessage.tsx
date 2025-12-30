@@ -16,33 +16,33 @@ export default function ErrorMessage({
   const errorConfig = {
     "not-found": {
       icon: <XCircle className="w-12 h-12 text-red-500" />,
-      title: "Ticker no encontrado",
+      title: "Ticker not found",
       description: ticker
-        ? `No se encontró información para el ticker "${ticker}". Por favor verifica que el símbolo sea correcto.`
-        : "No se encontró el ticker especificado.",
+        ? `No information found for ticker "${ticker}". Please verify the symbol is correct.`
+        : "The specified ticker was not found.",
       suggestion:
-        "Intenta con tickers conocidos como AAPL, MSFT, NVDA, o AMZN.",
+        "Try with known tickers like AAPL, MSFT, NVDA, or AMZN.",
     },
     "api-error": {
       icon: <AlertCircle className="w-12 h-12 text-orange-500" />,
-      title: "Error de API",
+      title: "API Error",
       description:
-        message || "Hubo un problema al obtener los datos financieros.",
+        message || "There was a problem fetching financial data.",
       suggestion:
-        "Por favor intenta nuevamente en unos momentos. Si el problema persiste, verifica tu API key.",
+        "Please try again in a few moments. If the problem persists, verify your API key.",
     },
     "rate-limit": {
       icon: <Clock className="w-12 h-12 text-yellow-500" />,
-      title: "Límite de consultas alcanzado",
+      title: "Rate limit reached",
       description:
-        "Se ha alcanzado el límite de consultas permitidas por la API.",
-      suggestion: "Por favor espera unos minutos antes de intentar nuevamente.",
+        "The API query limit has been reached.",
+      suggestion: "Please wait a few minutes before trying again.",
     },
     generic: {
       icon: <AlertCircle className="w-12 h-12 text-gray-300" />,
       title: "Error",
-      description: message || "Ocurrió un error inesperado.",
-      suggestion: "Por favor intenta nuevamente.",
+      description: message || "An unexpected error occurred.",
+      suggestion: "Please try again.",
     },
   };
 

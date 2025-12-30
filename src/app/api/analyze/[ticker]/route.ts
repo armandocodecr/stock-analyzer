@@ -31,7 +31,7 @@ export async function POST(
       );
     }
 
-    // Construir el prompt con toda la información disponible
+    // Build prompt with all available information
     const prompt = buildAnalysisPrompt(ticker, stockData);
 
     const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -115,7 +115,7 @@ Continue with next section...`,
 
     if (!analysis) {
       return NextResponse.json(
-        { error: "No se pudo generar el análisis" },
+        { error: "Could not generate analysis" },
         { status: 500 }
       );
     }
@@ -126,7 +126,7 @@ Continue with next section...`,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error en análisis de IA:", error);
+    console.error("Error in AI analysis:", error);
 
     if (error instanceof OpenAI.APIError) {
       return NextResponse.json(
@@ -139,7 +139,7 @@ Continue with next section...`,
     }
 
     return NextResponse.json(
-      { error: "Error interno del servidor al generar análisis" },
+      { error: "Internal server error generating analysis" },
       { status: 500 }
     );
   }
@@ -148,15 +148,15 @@ Continue with next section...`,
 function buildAnalysisPrompt(ticker: string, stockData: any): string {
   const sections: string[] = [];
 
-  sections.push(`# Análisis de ${ticker.toUpperCase()}\n`);
+  sections.push(`# Analysis of ${ticker.toUpperCase()}\n`);
 
   // Company Info
   if (stockData.companyName) {
-    sections.push(`## Información de la Compañía`);
+    sections.push(`## Company Information`);
     sections.push(`- Nombre: ${stockData.companyName}`);
     if (stockData.industry) sections.push(`- Industria: ${stockData.industry}`);
     if (stockData.description)
-      sections.push(`- Descripción: ${stockData.description}`);
+      sections.push(`- Description: ${stockData.description}`);
     sections.push("");
   }
 
@@ -209,8 +209,8 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
 
   // Annual Metrics (10-K)
   if (stockData.metrics) {
-    sections.push(`## Estado Financiero Anual (10-K)`);
-    sections.push(`Período: ${stockData.periodEndDate || "N/A"}`);
+    sections.push(`## Annual Financial Statement (10-K)`);
+    sections.push(`Period: ${stockData.periodEndDate || "N/A"}`);
     sections.push(`Filing Date: ${stockData.filingDate || "N/A"}`);
     const m = stockData.metrics;
     if (m.revenue)
@@ -253,7 +253,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
     sections.push(`## Datos Trimestrales`);
 
     if (stockData.quarterly.revenue?.length > 0) {
-      sections.push(`\n### Revenue por Trimestre (últimos 8):`);
+      sections.push(`\n### Quarterly Revenue (last 8):`);
       stockData.quarterly.revenue.slice(0, 8).forEach((q: any) => {
         sections.push(
           `- ${q.period}: $${(q.value / 1e9).toFixed(2)}B (${q.year})`
@@ -262,7 +262,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
     }
 
     if (stockData.quarterly.netIncome?.length > 0) {
-      sections.push(`\n### Net Income por Trimestre (últimos 8):`);
+      sections.push(`\n### Quarterly Net Income (last 8):`);
       stockData.quarterly.netIncome.slice(0, 8).forEach((q: any) => {
         sections.push(
           `- ${q.period}: $${(q.value / 1e9).toFixed(2)}B (${q.year})`
@@ -271,7 +271,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
     }
 
     if (stockData.quarterly.operatingIncome?.length > 0) {
-      sections.push(`\n### Operating Income por Trimestre (últimos 8):`);
+      sections.push(`\n### Quarterly Operating Income (last 8):`);
       stockData.quarterly.operatingIncome.slice(0, 8).forEach((q: any) => {
         sections.push(
           `- ${q.period}: $${(q.value / 1e9).toFixed(2)}B (${q.year})`
@@ -280,7 +280,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
     }
 
     if (stockData.quarterly.eps?.length > 0) {
-      sections.push(`\n### EPS por Trimestre (últimos 8):`);
+      sections.push(`\n### Quarterly EPS (last 8):`);
       stockData.quarterly.eps.slice(0, 8).forEach((q: any) => {
         sections.push(`- ${q.period}: $${q.value.toFixed(2)} (${q.year})`);
       });
@@ -291,9 +291,9 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
 
   // Historical Annual Data
   if (stockData.historicalAnnual?.length > 0) {
-    sections.push(`## Datos Históricos Anuales (últimos 5 años)`);
+    sections.push(`## Annual Historical Data (last 5 years)`);
     stockData.historicalAnnual.slice(0, 5).forEach((year: any) => {
-      sections.push(`\n### Año ${year.fiscalYear}:`);
+      sections.push(`\n### Year ${year.fiscalYear}:`);
       if (year.revenue)
         sections.push(`- Revenue: $${(year.revenue / 1e9).toFixed(2)}B`);
       if (year.netIncome)
@@ -312,7 +312,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
   if (stockData.materialEvents?.length > 0) {
     sections.push(`## Eventos Materiales Recientes (8-K)`);
     sections.push(
-      `Se han reportado ${stockData.materialEvents.length} eventos materiales en los últimos 12 meses.`
+      `${stockData.materialEvents.length} material events reported in the last 12 months.`
     );
     sections.push(
       `Tipos de eventos: ${[...new Set(stockData.materialEvents.map((e: any) => e.items).flat())].join(", ")}`
@@ -324,7 +324,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
   if (stockData.insiderActivity?.length > 0) {
     sections.push(`## Actividad de Insiders (Forms 4)`);
     sections.push(
-      `Se han registrado ${stockData.insiderActivity.length} transacciones de insiders recientemente.`
+      `${stockData.insiderActivity.length} insider transactions recorded recently.`
     );
 
     const purchases = stockData.insiderActivity.filter(
@@ -351,7 +351,7 @@ function buildAnalysisPrompt(ticker: string, stockData: any): string {
 
   sections.push(`\n---\n`);
   sections.push(
-    `Analiza toda esta información y proporciona tu evaluación profesional como inversionista experimentado.`
+    `Analyze all this information and provide your professional evaluation as an experienced investor.`
   );
 
   return sections.join("\n");
