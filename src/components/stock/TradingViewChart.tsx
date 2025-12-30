@@ -13,15 +13,12 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ ticker, exchange = 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Limpiar cualquier script anterior
     containerRef.current.innerHTML = "";
 
-    // Crear el contenedor para el widget
     const widgetContainer = document.createElement("div");
     widgetContainer.className = "tradingview-widget-container__widget";
     containerRef.current.appendChild(widgetContainer);
 
-    // Crear y agregar el script del widget
     const script = document.createElement("script");
     script.src =
       "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";

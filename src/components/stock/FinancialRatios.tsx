@@ -48,7 +48,6 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
         ? (latest.ttmNetIncome / latest.latestTotalAssets) * 100
         : undefined,
 
-    // Liquidity Ratios (using annual 10-K Balance Sheet)
     currentRatio:
       latest.latestCurrentLiabilities &&
       latest.latestCurrentAssets &&
@@ -69,7 +68,6 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
         ? latest.latestCash / latest.latestCurrentLiabilities
         : undefined,
 
-    // Leverage Ratios (using annual 10-K Balance Sheet)
     debtToEquity:
       latest.latestStockholdersEquity &&
       latest.latestTotalDebt &&

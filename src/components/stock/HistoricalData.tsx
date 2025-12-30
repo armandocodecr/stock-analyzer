@@ -34,7 +34,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Función para eliminar duplicados manteniendo el registro más reciente por año fiscal
 const deduplicateByFiscalYear = <T extends { fiscalYear: number; endDate: string }>(
   data: T[]
 ): T[] => {
@@ -57,7 +56,6 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
     return null;
   }
 
-  // Deduplicar todos los datos históricos
   const uniqueRevenue = historical.revenue ? deduplicateByFiscalYear(historical.revenue) : [];
   const uniqueNetIncome = historical.netIncome ? deduplicateByFiscalYear(historical.netIncome) : [];
   const uniqueTotalAssets = historical.totalAssets ? deduplicateByFiscalYear(historical.totalAssets) : [];

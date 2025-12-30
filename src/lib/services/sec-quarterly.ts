@@ -190,14 +190,12 @@ export async function getQuarterlyMetrics(facts: SECCompanyFacts) {
   const netIncomeQoQ = calculateQoQGrowth(netIncomeQuarterly);
 
   return {
-    // Último trimestre
     latestQuarter: revenueQuarterly[0]
       ? `${revenueQuarterly[0].fiscalYear} ${revenueQuarterly[0].quarter}`
       : "",
     latestQuarterEndDate: revenueQuarterly[0]?.endDate,
     latestQuarterFiledDate: revenueQuarterly[0]?.filedDate,
 
-    // Valores trimestrales
     quarterlyRevenue: revenueQuarterly.map((q) => ({
       quarter: `${q.fiscalYear} ${q.quarter}`,
       value: q.value,
@@ -210,7 +208,6 @@ export async function getQuarterlyMetrics(facts: SECCompanyFacts) {
       endDate: q.endDate,
     })),
 
-    // Crecimiento QoQ
     revenueQoQ,
     netIncomeQoQ,
   };

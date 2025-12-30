@@ -128,19 +128,16 @@ async function fetchFromSEC<T>(endpoint: string): Promise<T> {
 export async function getCIKFromTicker(ticker: string): Promise<string> {
   const normalizedTicker = ticker.toUpperCase().trim();
 
-  // Check local cache first
   if (TICKER_TO_CIK_MAP[normalizedTicker]) {
     return TICKER_TO_CIK_MAP[normalizedTicker];
   }
 
-  // Check cache
   const cacheKey = `sec_cik_${normalizedTicker}`;
   const cached = cache.get<string>(cacheKey);
   if (cached) {
     return cached;
   }
 
-  // Dynamic search using SEC company_tickers.json
   const cik = await searchTickerCIK(normalizedTicker);
 
   if (!cik) {
@@ -149,7 +146,6 @@ export async function getCIKFromTicker(ticker: string): Promise<string> {
     );
   }
 
-  // Cache for 30 days
   cache.set(cacheKey, cik, 30 * 24 * 60 * 60 * 1000);
 
   return cik;
@@ -173,7 +169,6 @@ export async function getSECCompanyFacts(
     `/api/xbrl/companyfacts/CIK${cik}.json`
   );
 
-  // Cache for 24 hours (SEC data updates when company files)
   cache.set(cacheKey, facts, 24 * 60 * 60 * 1000);
 
   return facts;
@@ -576,13 +571,9 @@ export async function extractSECMetrics(ticker: string) {
     const cik = await getCIKFromTicker(ticker);
     const facts = await getSECCompanyFacts(cik);
     
-    // Get exchange information from submissions
     const submissions = await getSECSubmissions(cik);
     const primaryExchange = submissions.exchanges?.[0] || "NASDAQ";
 
-    // Extract latest annual (10-K FY) values with dates.
-    // Revenue tags can change across years (e.g., GOOGL has both Revenues and RevenueFromContract...)
-    // so we pick the most recent FY 10-K among common revenue tags.
     const revenueData = getLatestAnnualValueWithDateFromFields(facts, [
       "RevenueFromContractWithCustomerExcludingAssessedTax",
       "Revenues",
@@ -599,7 +590,6 @@ export async function extractSECMetrics(ticker: string) {
       "StockholdersEquity"
     );
 
-    // Debt fields
     const longTermDebt =
       getLatestAnnualValue(facts, "LongTermDebtNoncurrent") ||
       getLatestAnnualValue(facts, "LongTermDebt");
@@ -611,7 +601,6 @@ export async function extractSECMetrics(ticker: string) {
       getLatestAnnualValue(facts, "CashAndCashEquivalentsAtCarryingValue") ||
       getLatestAnnualValue(facts, "Cash");
 
-    // Cash flow
     const operatingCashFlow = getLatestAnnualValue(
       facts,
       "NetCashProvidedByUsedInOperatingActivities"
@@ -623,7 +612,6 @@ export async function extractSECMetrics(ticker: string) {
       ) || 0
     );
 
-    // Income statement
     const costOfRevenue =
       getLatestAnnualValue(facts, "CostOfRevenue") ||
       getLatestAnnualValue(facts, "CostOfGoodsAndServicesSold");
@@ -634,7 +622,6 @@ export async function extractSECMetrics(ticker: string) {
     );
     const interestExpense = getLatestAnnualValue(facts, "InterestExpense");
 
-    // BALANCE SHEET - Liquidity
     const currentAssets = getLatestAnnualValue(facts, "AssetsCurrent");
     const currentLiabilities = getLatestAnnualValue(
       facts,
@@ -654,7 +641,6 @@ export async function extractSECMetrics(ticker: string) {
       "PropertyPlantAndEquipmentNet"
     );
 
-    // CASH FLOW - Complete Statement
     const investingCashFlow = getLatestAnnualValue(
       facts,
       "NetCashProvidedByUsedInInvestingActivities"
@@ -670,7 +656,6 @@ export async function extractSECMetrics(ticker: string) {
       getLatestAnnualValue(facts, "PaymentsForRepurchaseOfCommonStock") || 0
     );
 
-    // INCOME STATEMENT - Details
     const grossProfit = getLatestAnnualValue(facts, "GrossProfit");
     const operatingExpenses = getLatestAnnualValue(facts, "OperatingExpenses");
     const rdExpense = getLatestAnnualValue(
@@ -690,12 +675,10 @@ export async function extractSECMetrics(ticker: string) {
       "DepreciationDepletionAndAmortization"
     );
 
-    // Capital
     const sharesOutstanding =
       getLatestAnnualValue(facts, "CommonStockSharesOutstanding", "shares") ||
       getLatestAnnualValue(facts, "CommonStockSharesIssued", "shares");
 
-    // Historical for growth
     const revenueHistory =
       getHistoricalAnnualValues(facts, "Revenues") ||
       getHistoricalAnnualValues(
@@ -704,7 +687,6 @@ export async function extractSECMetrics(ticker: string) {
       );
     const netIncomeHistory = getHistoricalAnnualValues(facts, "NetIncomeLoss");
 
-    // ===== GET HISTORICAL ANNUAL DATA FOR TABLES (Last 5 years) =====
     const historicalRevenue =
       getHistoricalAnnualValuesDetailed(facts, "Revenues", 5).length > 0
         ? getHistoricalAnnualValuesDetailed(facts, "Revenues", 5)
@@ -738,7 +720,6 @@ export async function extractSECMetrics(ticker: string) {
       5
     );
 
-    // Calculate historical Free Cash Flow (Operating CF - CapEx)
     const historicalFreeCashFlow = historicalOperatingCashFlow.map((ocf) => {
       const capexForYear =
         getHistoricalAnnualValuesDetailed(
@@ -754,21 +735,12 @@ export async function extractSECMetrics(ticker: string) {
       };
     });
 
-    // ===== ELIMINATE ALL MANUAL CALCULATIONS =====
-    // We will ONLY show data that comes directly from SEC filings
-    // NO calculated ratios, NO derived metrics
-
-    // Get quarterly metrics
     const quarterlyData = await getQuarterlyMetrics(facts);
 
-    // Calculate total debt and free cash flow (these are simple additions, not complex calculations)
     const totalDebt = (longTermDebt || 0) + (shortTermDebt || 0);
     const netDebt = totalDebt - (cash || 0);
     const freeCashFlow = (operatingCashFlow || 0) - (capex || 0);
 
-    // ===== LATEST METRICS FOR RATIO CALCULATIONS =====
-    // For Financial Ratios: Use most recent annual report (10-K)
-    // Revenue tags vary across companies and time; merge series so TTM stays current.
     const ttmRevenue = getTTMValueFromFields(facts, [
       "RevenueFromContractWithCustomerExcludingAssessedTax",
       "Revenues",
@@ -783,7 +755,6 @@ export async function extractSECMetrics(ticker: string) {
       "CostOfGoodsAndServicesSold",
     ]);
 
-    // Latest Quarter Balance Sheet (most recent point-in-time)
     const latestTotalAssets = getLatestAnnualValue(facts, "Assets");
     const latestCurrentAssets = getLatestAnnualValue(facts, "AssetsCurrent");
     const latestCurrentLiabilities = getLatestAnnualValue(
@@ -808,7 +779,6 @@ export async function extractSECMetrics(ticker: string) {
     const latestTotalDebt = (latestLongTermDebt || 0) + (latestShortTermDebt || 0);
 
     return {
-      // Raw Income Statement (from 10-K)
       revenue,
       costOfRevenue,
       grossProfit,
@@ -822,7 +792,6 @@ export async function extractSECMetrics(ticker: string) {
       ebitda,
       netIncome,
 
-      // Raw Balance Sheet - Assets (from 10-K)
       totalAssets,
       currentAssets,
       cash,
@@ -830,17 +799,14 @@ export async function extractSECMetrics(ticker: string) {
       inventory,
       propertyPlantEquipment,
 
-      // Raw Balance Sheet - Liabilities (from 10-K)
       totalLiabilities,
       currentLiabilities,
       shortTermDebt,
       longTermDebt,
       accountsPayable,
 
-      // Raw Balance Sheet - Equity (from 10-K)
       stockholdersEquity,
 
-      // Cash Flow Statement (from 10-K)
       operatingCashFlow,
       investingCashFlow,
       financingCashFlow,
@@ -849,39 +815,27 @@ export async function extractSECMetrics(ticker: string) {
       dividendsPaid,
       stockRepurchases,
 
-      // Debt (simple additions)
-      totalDebt, // Short-term + Long-term
-      netDebt, // Total Debt - Cash
-
-      // Capital
+      totalDebt,
+      netDebt,
       sharesOutstanding,
 
-      // NO CALCULATED RATIOS OR METRICS
-      // Users can calculate their own ratios from the raw data
-
-      // Metadata
       entityName: facts.entityName,
       cik,
       exchange: primaryExchange,
 
-      // Filing dates
       filingDate: revenueData.filedDate,
       periodEndDate: revenueData.endDate,
       fiscalYear: revenueData.fiscalYear,
 
-      // Quarterly data (10-Q)
       quarterly: quarterlyData,
 
-      // Latest metrics for ratio calculations (most recent annual 10-K)
       latestMetrics: {
-        // Annual Income Statement from latest 10-K (12 months)
         ttmRevenue,
         ttmNetIncome,
         ttmOperatingIncome,
         ttmGrossProfit,
         ttmCostOfRevenue,
 
-        // Annual Balance Sheet from latest 10-K (point-in-time snapshot)
         latestTotalAssets,
         latestCurrentAssets,
         latestCurrentLiabilities,
@@ -893,7 +847,6 @@ export async function extractSECMetrics(ticker: string) {
         latestTotalDebt,
       },
 
-      // Historical annual data (10-K) - Last 5 years
       historicalAnnual: {
         revenue: historicalRevenue,
         netIncome: historicalNetIncome,
