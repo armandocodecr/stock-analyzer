@@ -54,7 +54,8 @@ async function getStockData(ticker: string): Promise<StockData | null> {
     console.log("[STOCK PAGE] Fetching stock data for:", ticker, "from:", baseUrl);
     
     const response = await fetch(`${baseUrl}/api/stock/${ticker}`, {
-      next: { revalidate: 86400 }, // Cache for 24 hours
+      next: { revalidate: 0 },
+      cache: 'no-store'
     });
 
     console.log("[STOCK PAGE] Response status:", response.status);
