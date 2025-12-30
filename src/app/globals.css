@@ -49,3 +49,13 @@ body {
 .scrollbar-thumb-blue-900\/60::-webkit-scrollbar-thumb:hover {
   background-color: rgba(30, 64, 175, 0.8);
 }
+
+/* Hide scrollbar completely */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
