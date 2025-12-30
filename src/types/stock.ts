@@ -7,6 +7,7 @@ export interface StockData {
   symbol: string;
   name: string;
   cik: string;
+  exchange?: string; // Stock exchange (NYSE, NASDAQ, etc.)
   sector?: string;
   filingDate?: string;
   periodEndDate?: string;
