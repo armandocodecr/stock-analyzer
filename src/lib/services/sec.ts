@@ -572,7 +572,8 @@ export async function extractSECMetrics(ticker: string) {
     const facts = await getSECCompanyFacts(cik);
     
     const submissions = await getSECSubmissions(cik);
-    const primaryExchange = submissions.exchanges?.[0] || "NASDAQ";
+    const exchangeRaw = submissions.exchanges?.[0];
+    const primaryExchange = exchangeRaw && exchangeRaw.trim() !== "" ? exchangeRaw : "NASDAQ";
 
     const revenueData = getLatestAnnualValueWithDateFromFields(facts, [
       "RevenueFromContractWithCustomerExcludingAssessedTax",
