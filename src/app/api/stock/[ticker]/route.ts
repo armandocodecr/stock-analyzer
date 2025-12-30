@@ -75,6 +75,7 @@ export async function GET(
       symbol: normalizedTicker,
       name: secData.entityName,
       cik: secData.cik,
+      exchange: secData.exchange,
       sector: CIK_TO_SECTOR[secData.cik],
       filingDate: secData.filingDate,
       periodEndDate: secData.periodEndDate,
