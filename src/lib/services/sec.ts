@@ -14,6 +14,7 @@
 import { cache } from "../utils/cache";
 import { searchTickerCIK } from "./sec-ticker-lookup";
 import { getQuarterlyMetrics } from "./sec-quarterly";
+import { getSECSubmissions } from "./sec-submissions";
 
 const SEC_BASE_URL = "https://data.sec.gov";
 const USER_AGENT = "Stock-Analyzer-App armando.cr.murillo@gmail.com"; // Required by SEC
@@ -574,6 +575,10 @@ export async function extractSECMetrics(ticker: string) {
   try {
     const cik = await getCIKFromTicker(ticker);
     const facts = await getSECCompanyFacts(cik);
+    
+    // Get exchange information from submissions
+    const submissions = await getSECSubmissions(cik);
+    const primaryExchange = submissions.exchanges?.[0] || "NASDAQ";
 
     // Extract latest annual (10-K FY) values with dates.
     // Revenue tags can change across years (e.g., GOOGL has both Revenues and RevenueFromContract...)
@@ -857,6 +862,7 @@ export async function extractSECMetrics(ticker: string) {
       // Metadata
       entityName: facts.entityName,
       cik,
+      exchange: primaryExchange,
 
       // Filing dates
       filingDate: revenueData.filedDate,

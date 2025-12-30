@@ -4,9 +4,10 @@ import { useEffect, useRef } from "react";
 
 interface TradingViewChartProps {
   ticker: string;
+  exchange?: string;
 }
 
-const TradingViewChart: React.FC<TradingViewChartProps> = ({ ticker }) => {
+const TradingViewChart: React.FC<TradingViewChartProps> = ({ ticker, exchange = "NASDAQ" }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ ticker }) => {
     script.innerHTML = JSON.stringify({
       width: "100%",
       height: 650,
-      symbol: `NASDAQ:${ticker}`,
+      symbol: `${exchange}:${ticker}`,
       interval: "D",
       timezone: "Etc/UTC",
       theme: "dark",
@@ -49,7 +50,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ ticker }) => {
         containerRef.current.innerHTML = "";
       }
     };
-  }, [ticker]);
+  }, [ticker, exchange]);
 
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">

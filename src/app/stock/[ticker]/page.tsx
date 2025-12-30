@@ -127,7 +127,7 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                 content: (
                   <div className="space-y-6">
                     {/* TradingView Chart */}
-                    <TradingViewChart ticker={normalizedTicker} />
+                    <TradingViewChart ticker={normalizedTicker} exchange={stockData.exchange} />
 
                     {/* Key Financial Ratios */}
                     <FinancialRatios data={stockData} />
