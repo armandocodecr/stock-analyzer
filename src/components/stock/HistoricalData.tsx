@@ -62,6 +62,13 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
   const uniqueOperatingCashFlow = historical.operatingCashFlow ? deduplicateByFiscalYear(historical.operatingCashFlow) : [];
   const uniqueFreeCashFlow = historical.freeCashFlow ? deduplicateByFiscalYear(historical.freeCashFlow) : [];
 
+  // Reversed arrays for tables (newest to oldest)
+  const reversedRevenue = [...uniqueRevenue].reverse();
+  const reversedNetIncome = [...uniqueNetIncome].reverse();
+  const reversedTotalAssets = [...uniqueTotalAssets].reverse();
+  const reversedOperatingCashFlow = [...uniqueOperatingCashFlow].reverse();
+  const reversedFreeCashFlow = [...uniqueFreeCashFlow].reverse();
+
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
       <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
@@ -134,7 +141,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {uniqueRevenue.map((item, idx) => (
+                  {reversedRevenue.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -216,7 +223,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {uniqueNetIncome.map((item, idx) => (
+                  {reversedNetIncome.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -298,7 +305,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {uniqueTotalAssets.map((item, idx) => (
+                  {reversedTotalAssets.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -380,7 +387,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {uniqueOperatingCashFlow.map((item, idx) => (
+                  {reversedOperatingCashFlow.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
@@ -462,7 +469,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {uniqueFreeCashFlow.map((item, idx) => (
+                  {reversedFreeCashFlow.map((item, idx) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-700 hover:bg-gray-700"
