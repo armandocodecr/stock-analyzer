@@ -69,17 +69,6 @@ Visit `http://localhost:3000` and search for any US public company!
 
 ---
 
-## 📖 Documentation
-
-For detailed implementation information, see:
-
-- [Implementation Plan](./IMPLEMENTATION_GUIDE.md)
-- [Architecture Proposal](./ARCHITECTURE_PROPOSAL.md)
-- [Development Roadmap](./ROADMAP.md)
-- [Complete Walkthrough](./.gemini/antigravity/brain/*/walkthrough.md)
-
----
-
 ## 🎨 Features
 
 ### Search Any Company
