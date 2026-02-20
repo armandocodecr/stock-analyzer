@@ -31,7 +31,6 @@ export default function TickerSearch() {
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -41,19 +40,16 @@ export default function TickerSearch() {
         setShowSuggestions(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.length < 2) {
         setSuggestions([]);
         return;
       }
-
       setIsLoading(true);
       try {
         const response = await fetch(
@@ -70,24 +66,20 @@ export default function TickerSearch() {
         setIsLoading(false);
       }
     };
-
     const debounce = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(debounce);
   }, [query]);
 
   const handleSearch = (searchTicker: string) => {
     const normalized = normalizeTicker(searchTicker);
-
     if (!normalized) {
-      setError("Please enter a ticker symbol");
+      setError("Enter a ticker symbol");
       return;
     }
-
     if (!isValidTicker(normalized)) {
-      setError("Invalid ticker format (1-5 letters)");
+      setError("Invalid ticker (1–5 letters)");
       return;
     }
-
     setError("");
     setShowSuggestions(false);
     setQuery("");
@@ -100,7 +92,8 @@ export default function TickerSearch() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6" ref={searchRef}>
+    <div className="w-full max-w-xl mx-auto" ref={searchRef}>
+      {/* Search input */}
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
           <input
@@ -110,51 +103,125 @@ export default function TickerSearch() {
               setQuery(e.target.value);
               setError("");
             }}
-            placeholder="Search by ticker or company name..."
-            className="w-full px-6 py-4 pr-14 text-lg bg-gray-800 text-white border-2 border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-lg placeholder:text-gray-400"
+            placeholder="Ticker or company name…"
+            className="w-full px-4 py-3 pr-12 text-sm font-mono tracking-wide transition-all"
+            style={{
+              background: "var(--surface-inset)",
+              color: "var(--ink-primary)",
+              border: "1px solid var(--border-default)",
+              borderRadius: "6px",
+              outline: "none",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-focus)";
+              e.currentTarget.style.boxShadow =
+                "0 0 0 3px var(--accent-muted)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
             maxLength={50}
+            autoComplete="off"
+            spellCheck={false}
           />
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-            aria-label="Search"
             disabled={isLoading}
+            aria-label="Search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-opacity disabled:opacity-40"
+            style={{ color: "var(--accent)" }}
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             )}
           </button>
         </div>
 
-        {error && <p className="mt-2 text-sm text-red-600 ml-2">{error}</p>}
+        {error && (
+          <p
+            className="mt-2 text-xs ml-1"
+            style={{ color: "var(--negative-text)" }}
+          >
+            {error}
+          </p>
+        )}
 
-        {/* Suggestions Dropdown */}
+        {/* Suggestions dropdown */}
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-10 w-full mt-2 bg-gray-800 border-2 border-gray-700 rounded-xl shadow-lg max-h-96 overflow-y-auto">
+          <div
+            className="absolute z-20 w-full mt-1 overflow-y-auto max-h-80"
+            style={{
+              background: "var(--surface-raised)",
+              border: "1px solid var(--border-strong)",
+              borderRadius: "6px",
+            }}
+          >
             {suggestions.map((result) => (
               <button
                 key={result.cik}
                 onClick={() => handleSearch(result.ticker)}
-                className="w-full px-6 py-3 text-left hover:bg-gray-700 border-b border-gray-700 last:border-b-0 transition-colors"
+                className="w-full px-4 py-3 text-left transition-colors"
+                style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background =
+                    "var(--surface)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background =
+                    "transparent";
+                }}
               >
-                <p className="font-semibold text-white">{result.ticker}</p>
-                <p className="text-sm text-gray-400 truncate">{result.name}</p>
+                <p
+                  className="text-xs font-bold font-mono tracking-wider"
+                  style={{ color: "var(--accent-text)" }}
+                >
+                  {result.ticker}
+                </p>
+                <p
+                  className="text-xs mt-0.5 truncate"
+                  style={{ color: "var(--ink-secondary)" }}
+                >
+                  {result.name}
+                </p>
               </button>
             ))}
           </div>
         )}
       </form>
 
-      <div className="text-center">
-        <p className="text-sm text-gray-400 mb-3">Popular tickers:</p>
+      {/* Popular tickers */}
+      <div className="mt-6">
+        <p
+          className="text-xs text-center mb-3 tracking-widest uppercase"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          Quick access
+        </p>
         <div className="flex flex-wrap gap-2 justify-center">
           {POPULAR_TICKERS.map((symbol) => (
             <button
               key={symbol}
               onClick={() => handleSearch(symbol)}
-              className="px-4 py-2 text-sm font-medium text-blue-400 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors border border-gray-700"
+              className="px-3 py-1.5 text-xs font-mono font-semibold tracking-wider transition-colors"
+              style={{
+                background: "var(--surface)",
+                color: "var(--ink-secondary)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "4px",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.color = "var(--accent-text)";
+                el.style.borderColor = "var(--accent)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.color = "var(--ink-secondary)";
+                el.style.borderColor = "var(--border-default)";
+              }}
             >
               {symbol}
             </button>
