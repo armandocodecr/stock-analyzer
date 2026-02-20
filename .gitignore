@@ -17,6 +17,11 @@
 /.next/
 /out/
 
+# IA
+/.claude
+/.agents
+/.interface-design
+
 # production
 /build
 
