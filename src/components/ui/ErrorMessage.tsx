@@ -15,31 +15,27 @@ export default function ErrorMessage({
 }: ErrorMessageProps) {
   const errorConfig = {
     "not-found": {
-      icon: <XCircle className="w-12 h-12 text-red-500" />,
+      icon: <XCircle className="w-8 h-8" style={{ color: "var(--negative-text)" }} />,
       title: "Ticker not found",
       description: ticker
-        ? `No information found for ticker "${ticker}". Please verify the symbol is correct.`
+        ? `No information found for "${ticker}". Verify the symbol is correct.`
         : "The specified ticker was not found.",
-      suggestion:
-        "Try with known tickers like AAPL, MSFT, NVDA, or AMZN.",
+      suggestion: "Try AAPL, MSFT, NVDA, or AMZN.",
     },
     "api-error": {
-      icon: <AlertCircle className="w-12 h-12 text-orange-500" />,
+      icon: <AlertCircle className="w-8 h-8" style={{ color: "var(--warning-text)" }} />,
       title: "API Error",
-      description:
-        message || "There was a problem fetching financial data.",
-      suggestion:
-        "Please try again in a few moments. If the problem persists, verify your API key.",
+      description: message || "There was a problem fetching financial data.",
+      suggestion: "Please try again in a few moments.",
     },
     "rate-limit": {
-      icon: <Clock className="w-12 h-12 text-yellow-500" />,
+      icon: <Clock className="w-8 h-8" style={{ color: "var(--warning-text)" }} />,
       title: "Rate limit reached",
-      description:
-        "The API query limit has been reached.",
+      description: "The API query limit has been reached.",
       suggestion: "Please wait a few minutes before trying again.",
     },
     generic: {
-      icon: <AlertCircle className="w-12 h-12 text-gray-300" />,
+      icon: <AlertCircle className="w-8 h-8" style={{ color: "var(--ink-tertiary)" }} />,
       title: "Error",
       description: message || "An unexpected error occurred.",
       suggestion: "Please try again.",
@@ -49,21 +45,39 @@ export default function ErrorMessage({
   const config = errorConfig[type];
 
   return (
-    <div className="max-w-2xl mx-auto mt-12 p-8 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-      <div className="flex flex-col items-center text-center space-y-4">
+    <div
+      className="max-w-lg mx-auto mt-12 p-8 rounded-lg text-center"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      <div className="flex flex-col items-center gap-4">
         {config.icon}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2
+            className="text-base font-semibold mb-2"
+            style={{ color: "var(--ink-primary)" }}
+          >
             {config.title}
           </h2>
-          <p className="text-gray-300 mb-4">{config.description}</p>
-          <p className="text-sm text-gray-400 italic">{config.suggestion}</p>
+          <p className="text-sm mb-2" style={{ color: "var(--ink-secondary)" }}>
+            {config.description}
+          </p>
+          <p className="text-xs" style={{ color: "var(--ink-tertiary)" }}>
+            {config.suggestion}
+          </p>
         </div>
         <a
           href="/"
-          className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="mt-2 px-5 py-2 text-xs font-medium rounded transition-colors"
+          style={{
+            background: "var(--accent-muted)",
+            color: "var(--accent-text)",
+            border: "1px solid rgba(59,130,246,0.3)",
+          }}
         >
-          Volver al inicio
+          Back to search
         </a>
       </div>
     </div>

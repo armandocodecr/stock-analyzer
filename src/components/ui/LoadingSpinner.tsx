@@ -5,16 +5,17 @@ export default function LoadingSpinner({
 }: {
   size?: "small" | "medium" | "large";
 }) {
-  const sizeClasses = {
-    small: "w-5 h-5 border-2",
-    medium: "w-8 h-8 border-3",
-    large: "w-12 h-12 border-4",
-  };
+  const dim = { small: "w-4 h-4", medium: "w-6 h-6", large: "w-10 h-10" };
+  const border = { small: "border", medium: "border-2", large: "border-2" };
 
   return (
     <div className="flex items-center justify-center">
       <div
-        className={`${sizeClasses[size]} border-blue-600 border-t-transparent rounded-full animate-spin`}
+        className={`${dim[size]} ${border[size]} rounded-full animate-spin`}
+        style={{
+          borderColor: "var(--border-strong)",
+          borderTopColor: "var(--accent)",
+        }}
       />
     </div>
   );

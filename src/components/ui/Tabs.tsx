@@ -27,7 +27,8 @@ export default function Tabs({ tabs, defaultTab, className }: TabsProps) {
 
   const checkScroll = () => {
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
     }
@@ -41,13 +42,10 @@ export default function Tabs({ tabs, defaultTab, className }: TabsProps) {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 200;
-      const newScrollLeft =
-        scrollContainerRef.current.scrollLeft +
-        (direction === "left" ? -scrollAmount : scrollAmount);
-      
       scrollContainerRef.current.scrollTo({
-        left: newScrollLeft,
+        left:
+          scrollContainerRef.current.scrollLeft +
+          (direction === "left" ? -200 : 200),
         behavior: "smooth",
       });
     }
@@ -55,61 +53,88 @@ export default function Tabs({ tabs, defaultTab, className }: TabsProps) {
 
   return (
     <div className={clsx("w-full", className)}>
-      <div className="flex items-center gap-2">
+      {/* Tab bar */}
+      <div className="flex items-center gap-1">
+        {/* Left scroll */}
         <button
           onClick={() => scroll("left")}
           disabled={!showLeftArrow}
-          className={clsx(
-            "p-2 rounded-lg transition-all",
-            showLeftArrow
-              ? "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-              : "bg-gray-800/30 text-gray-600 cursor-not-allowed"
-          )}
           aria-label="Scroll left"
+          className="p-1.5 rounded transition-opacity"
+          style={{
+            color: showLeftArrow ? "var(--ink-secondary)" : "var(--ink-disabled)",
+            opacity: showLeftArrow ? 1 : 0.3,
+          }}
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
+        {/* Scrollable tabs */}
         <div
           ref={scrollContainerRef}
           onScroll={checkScroll}
-          className="flex-1 border-b border-gray-700 overflow-x-auto pb-2 scrollbar-hide"
+          className="flex-1 overflow-x-auto scrollbar-hide"
+          style={{ borderBottom: "1px solid var(--border-default)" }}
         >
-          <div className="flex gap-1 min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={clsx(
-                  "px-6 py-3 font-medium text-sm whitespace-nowrap transition-all duration-200 border-b-2 flex justify-center items-center gap-2",
-                  activeTab === tab.id
-                    ? "border-blue-500 text-blue-400 bg-gray-800/50"
-                    : "border-transparent text-gray-400 hover:text-gray-300 hover:bg-gray-800/30"
-                )}
-              >
-                {tab.icon && <span>{tab.icon}</span>}
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex min-w-max">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="px-5 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-1.5"
+                  style={{
+                    color: isActive
+                      ? "var(--ink-primary)"
+                      : "var(--ink-tertiary)",
+                    borderBottom: isActive
+                      ? "2px solid var(--accent)"
+                      : "2px solid transparent",
+                    marginBottom: "-1px",
+                    background: "transparent",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  {tab.icon && (
+                    <span
+                      style={{
+                        color: isActive
+                          ? "var(--accent-text)"
+                          : "var(--ink-disabled)",
+                      }}
+                    >
+                      {/* Clone icon at small size */}
+                      <span className="[&>svg]:w-3.5 [&>svg]:h-3.5">
+                        {tab.icon}
+                      </span>
+                    </span>
+                  )}
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        {/* Right scroll */}
         <button
           onClick={() => scroll("right")}
           disabled={!showRightArrow}
-          className={clsx(
-            "p-2 rounded-lg transition-all",
-            showRightArrow
-              ? "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-              : "bg-gray-800/30 text-gray-600 cursor-not-allowed"
-          )}
           aria-label="Scroll right"
+          className="p-1.5 rounded transition-opacity"
+          style={{
+            color: showRightArrow
+              ? "var(--ink-secondary)"
+              : "var(--ink-disabled)",
+            opacity: showRightArrow ? 1 : 0.3,
+          }}
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="mt-6">{activeContent}</div>
+      <div className="mt-4">{activeContent}</div>
     </div>
   );
 }
