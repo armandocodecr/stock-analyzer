@@ -2,7 +2,7 @@
 
 import { StockData } from "@/types/stock";
 import { formatLargeNumber, formatPercentage } from "@/lib/utils/formatters";
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -21,10 +21,21 @@ interface QuarterlyTrendsProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl">
-        <p className="text-sm font-semibold text-gray-200 mb-2">{label}</p>
+      <div
+        className="px-3 py-2.5 rounded text-xs"
+        style={{
+          background: "var(--surface-raised)",
+          border: "1px solid var(--border-strong)",
+        }}
+      >
+        <p
+          className="font-mono font-semibold mb-1.5"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          {label}
+        </p>
         {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
+          <p key={index} className="font-mono" style={{ color: entry.color }}>
             {entry.name}: {formatLargeNumber(entry.value)}
           </p>
         ))}
@@ -37,243 +48,345 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function QuarterlyTrends({ data }: QuarterlyTrendsProps) {
   if (!data.quarterly) {
     return (
-      <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-200 mb-2">
+      <div
+        className="rounded-lg p-6"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-default)",
+        }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
           Quarterly Trends
         </h2>
-        <p className="text-sm text-gray-400">
-          No quarterly data available for this company
+        <p className="text-xs mt-3" style={{ color: "var(--ink-tertiary)" }}>
+          No quarterly data available.
         </p>
       </div>
     );
   }
 
   const { quarterly } = data;
+  const revenuePositive =
+    quarterly.revenueQoQ !== undefined && quarterly.revenueQoQ > 0;
+  const netIncomePositive =
+    quarterly.netIncomeQoQ !== undefined && quarterly.netIncomeQoQ > 0;
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-blue-400" />
-        Quarterly Trends (10-Q Filings)
-      </h2>
-
-      {/* Latest Quarter Info */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border border-blue-700/50 rounded-lg">
-        <p className="text-sm text-blue-400 font-semibold mb-1">
-          Latest Quarter
-        </p>
-        <p className="text-2xl font-bold text-blue-300 mb-1">
-          {quarterly.latestQuarter}
-        </p>
-        <p className="text-xs text-blue-400">
-          Filed:{" "}
-          {new Date(quarterly.latestQuarterFiledDate).toLocaleDateString()}
-        </p>
-        <p className="text-xs text-blue-400">
-          Period Ended:{" "}
-          {new Date(quarterly.latestQuarterEndDate).toLocaleDateString()}
-        </p>
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--border-default)" }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          Quarterly Trends
+        </h2>
+        <span
+          className="text-xs font-mono"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          10-Q Filings
+        </span>
       </div>
 
-      {/* QoQ Growth */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="p-4 border border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-          <p className="text-sm text-gray-300 mb-2">Revenue Growth (QoQ)</p>
-          <div className="flex items-center gap-2">
-            {quarterly.revenueQoQ !== undefined && quarterly.revenueQoQ > 0 ? (
-              <TrendingUp className="w-6 h-6 text-green-400" />
-            ) : (
-              <TrendingDown className="w-6 h-6 text-red-400" />
+      {/* Latest quarter + QoQ */}
+      <div
+        className="px-4 py-3 grid grid-cols-3 gap-4"
+        style={{
+          background: "var(--surface-inset)",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Latest Quarter
+          </p>
+          <p
+            className="text-sm font-mono font-semibold mt-0.5"
+            style={{ color: "var(--ink-primary)" }}
+          >
+            {quarterly.latestQuarter}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--ink-tertiary)" }}>
+            Filed{" "}
+            {new Date(quarterly.latestQuarterFiledDate).toLocaleDateString(
+              "en-US",
+              { month: "short", day: "numeric", year: "numeric" }
             )}
-            <p
-              className={`text-3xl font-bold ${
-                quarterly.revenueQoQ !== undefined && quarterly.revenueQoQ > 0
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
-            >
-              {formatPercentage(quarterly.revenueQoQ)}
-            </p>
-          </div>
+          </p>
         </div>
 
-        <div className="p-4 border border-gray-700 rounded-lg hover:shadow-md transition-shadow">
-          <p className="text-sm text-gray-300 mb-2">Net Income Growth (QoQ)</p>
-          <div className="flex items-center gap-2">
-            {quarterly.netIncomeQoQ !== undefined &&
-            quarterly.netIncomeQoQ > 0 ? (
-              <TrendingUp className="w-6 h-6 text-green-400" />
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Revenue QoQ
+          </p>
+          <p
+            className="text-sm font-mono font-semibold mt-0.5 flex items-center gap-1"
+            style={{
+              color: revenuePositive
+                ? "var(--positive-text)"
+                : "var(--negative-text)",
+            }}
+          >
+            {revenuePositive ? (
+              <TrendingUp className="w-3.5 h-3.5" />
             ) : (
-              <TrendingDown className="w-6 h-6 text-red-400" />
+              <TrendingDown className="w-3.5 h-3.5" />
             )}
+            {formatPercentage(quarterly.revenueQoQ)}
+          </p>
+        </div>
+
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Net Income QoQ
+          </p>
+          <p
+            className="text-sm font-mono font-semibold mt-0.5 flex items-center gap-1"
+            style={{
+              color: netIncomePositive
+                ? "var(--positive-text)"
+                : "var(--negative-text)",
+            }}
+          >
+            {netIncomePositive ? (
+              <TrendingUp className="w-3.5 h-3.5" />
+            ) : (
+              <TrendingDown className="w-3.5 h-3.5" />
+            )}
+            {formatPercentage(quarterly.netIncomeQoQ)}
+          </p>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-8">
+        {/* Revenue chart + table */}
+        {quarterly.quarterlyRevenue.length > 0 && (
+          <div>
             <p
-              className={`text-3xl font-bold ${
-                quarterly.netIncomeQoQ !== undefined &&
-                quarterly.netIncomeQoQ > 0
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color: "var(--ink-tertiary)" }}
             >
-              {formatPercentage(quarterly.netIncomeQoQ)}
+              Revenue by Quarter
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quarterly Revenue Table */}
-      <div className="mb-4">
-        <h3 className="text-md font-semibold text-gray-200 mb-3">
-          Revenue by Quarter
-        </h3>
-
-        {/* Quarterly Revenue Chart */}
-        <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={[...quarterly.quarterlyRevenue]
-                .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
-                .map((q) => ({
-                  quarter: q.quarter,
-                  value: q.value,
-                }))}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            <div
+              className="rounded mb-4 p-4"
+              style={{ background: "var(--surface-inset)" }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="quarter" 
-                stroke="#9CA3AF"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#9CA3AF"
-                style={{ fontSize: '12px' }}
-                tickFormatter={(value) => formatLargeNumber(value)}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-              <Line
-                type="monotone"
-                dataKey="value"
-                name="Revenue"
-                stroke="#3B82F6"
-                strokeWidth={2}
-                dot={{ fill: '#3B82F6', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Quarterly Revenue Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-600">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                  Quarter
-                </th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                  Revenue
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {quarterly.quarterlyRevenue.map((q, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b border-gray-700 hover:bg-gray-900 transition-colors"
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart
+                  data={[...quarterly.quarterlyRevenue]
+                    .sort(
+                      (a, b) =>
+                        new Date(a.endDate).getTime() -
+                        new Date(b.endDate).getTime()
+                    )
+                    .map((q) => ({ quarter: q.quarter, value: q.value }))}
+                  margin={{ top: 4, right: 20, left: 10, bottom: 4 }}
                 >
-                  <td className="py-3 px-4 text-sm text-gray-200">
-                    {q.quarter}
-                  </td>
-                  <td className="py-3 px-4 text-sm font-semibold text-white text-right">
-                    {formatLargeNumber(q.value)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Quarterly Net Income Table */}
-      <div>
-        <h3 className="text-md font-semibold text-gray-200 mb-3">
-          Net Income by Quarter
-        </h3>
-
-        {/* Quarterly Net Income Chart */}
-        <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={[...quarterly.quarterlyNetIncome]
-                .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
-                .map((q) => ({
-                  quarter: q.quarter,
-                  value: q.value,
-                }))}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="quarter" 
-                stroke="#9CA3AF"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#9CA3AF"
-                style={{ fontSize: '12px' }}
-                tickFormatter={(value) => formatLargeNumber(value)}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-              <Line
-                type="monotone"
-                dataKey="value"
-                name="Net Income"
-                stroke="#10B981"
-                strokeWidth={2}
-                dot={{ fill: '#10B981', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Quarterly Net Income Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-600">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                  Quarter
-                </th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                  Net Income
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {quarterly.quarterlyNetIncome.map((q, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b border-gray-700 hover:bg-gray-900 transition-colors"
-                >
-                  <td className="py-3 px-4 text-sm text-gray-200">
-                    {q.quarter}
-                  </td>
-                  <td
-                    className={`py-3 px-4 text-sm font-semibold text-right ${
-                      q.value >= 0 ? "text-green-400" : "text-red-400"
-                    }`}
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border-subtle)"
+                  />
+                  <XAxis
+                    dataKey="quarter"
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <YAxis
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tickFormatter={(v) => formatLargeNumber(v)}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    wrapperStyle={{
+                      color: "var(--ink-tertiary)",
+                      fontSize: "10px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Revenue"
+                    stroke="var(--chart-1)"
+                    strokeWidth={1.5}
+                    dot={{ fill: "var(--chart-1)", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                  <th
+                    className="text-left py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
                   >
-                    {formatLargeNumber(q.value)}
-                  </td>
+                    Quarter
+                  </th>
+                  <th
+                    className="text-right py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    Revenue
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {quarterly.quarterlyRevenue.map((q, idx) => (
+                  <tr
+                    key={idx}
+                    style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                  >
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono"
+                      style={{ color: "var(--ink-secondary)" }}
+                    >
+                      {q.quarter}
+                    </td>
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono tabular-nums text-right font-semibold"
+                      style={{ color: "var(--ink-primary)" }}
+                    >
+                      {formatLargeNumber(q.value)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Net Income chart + table */}
+        {quarterly.quarterlyNetIncome.length > 0 && (
+          <div>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Net Income by Quarter
+            </p>
+            <div
+              className="rounded mb-4 p-4"
+              style={{ background: "var(--surface-inset)" }}
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart
+                  data={[...quarterly.quarterlyNetIncome]
+                    .sort(
+                      (a, b) =>
+                        new Date(a.endDate).getTime() -
+                        new Date(b.endDate).getTime()
+                    )
+                    .map((q) => ({ quarter: q.quarter, value: q.value }))}
+                  margin={{ top: 4, right: 20, left: 10, bottom: 4 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border-subtle)"
+                  />
+                  <XAxis
+                    dataKey="quarter"
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <YAxis
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tickFormatter={(v) => formatLargeNumber(v)}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    wrapperStyle={{
+                      color: "var(--ink-tertiary)",
+                      fontSize: "10px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Net Income"
+                    stroke="var(--chart-2)"
+                    strokeWidth={1.5}
+                    dot={{ fill: "var(--chart-2)", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                  <th
+                    className="text-left py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    Quarter
+                  </th>
+                  <th
+                    className="text-right py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    Net Income
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {quarterly.quarterlyNetIncome.map((q, idx) => (
+                  <tr
+                    key={idx}
+                    style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                  >
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono"
+                      style={{ color: "var(--ink-secondary)" }}
+                    >
+                      {q.quarter}
+                    </td>
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono tabular-nums text-right font-semibold"
+                      style={{
+                        color:
+                          q.value >= 0
+                            ? "var(--positive-text)"
+                            : "var(--negative-text)",
+                      }}
+                    >
+                      {formatLargeNumber(q.value)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

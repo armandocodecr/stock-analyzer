@@ -2,30 +2,23 @@
 
 import { StockData } from "@/types/stock";
 import { formatPercentage, formatRatio } from "@/lib/utils/formatters";
-import { Calculator } from "lucide-react";
 
 interface FinancialRatiosProps {
   data: StockData;
 }
 
 export default function FinancialRatios({ data }: FinancialRatiosProps) {
-  const metrics = data.metrics;
   const latest = data.latestMetrics;
 
-  // If no latest metrics available, return null
-  if (!latest) {
-    return null;
-  }
+  if (!latest) return null;
 
-  // Calculate key financial ratios from most recent annual report (10-K)
-  // All ratios use data from the same fiscal year for consistency
   const ratios = {
-    // Profitability Ratios (using annual 10-K data)
     grossMargin:
       latest.ttmRevenue && latest.ttmGrossProfit
         ? (latest.ttmGrossProfit / latest.ttmRevenue) * 100
         : latest.ttmRevenue && latest.ttmCostOfRevenue
-        ? ((latest.ttmRevenue - latest.ttmCostOfRevenue) / latest.ttmRevenue) * 100
+        ? ((latest.ttmRevenue - latest.ttmCostOfRevenue) / latest.ttmRevenue) *
+          100
         : undefined,
     operatingMargin:
       latest.ttmRevenue && latest.ttmOperatingIncome
@@ -47,7 +40,6 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
       latest.latestTotalAssets > 0
         ? (latest.ttmNetIncome / latest.latestTotalAssets) * 100
         : undefined,
-
     currentRatio:
       latest.latestCurrentLiabilities &&
       latest.latestCurrentAssets &&
@@ -67,7 +59,6 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
       latest.latestCurrentLiabilities > 0
         ? latest.latestCash / latest.latestCurrentLiabilities
         : undefined,
-
     debtToEquity:
       latest.latestStockholdersEquity &&
       latest.latestTotalDebt &&
@@ -86,10 +77,10 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
       latest.latestStockholdersEquity > 0
         ? latest.latestTotalAssets / latest.latestStockholdersEquity
         : undefined,
-
-    // Efficiency Ratios (using annual 10-K data)
     assetTurnover:
-      latest.latestTotalAssets && latest.ttmRevenue && latest.latestTotalAssets > 0
+      latest.latestTotalAssets &&
+      latest.ttmRevenue &&
+      latest.latestTotalAssets > 0
         ? latest.ttmRevenue / latest.latestTotalAssets
         : undefined,
   };
@@ -105,85 +96,120 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
     isPercentage?: boolean;
     tooltip: string;
   }) => (
-    <tr className="border-b border-gray-700 hover:bg-gray-700">
-      <td className="py-3 px-4 text-sm text-gray-200" title={tooltip}>
+    <tr
+      title={tooltip}
+      style={{ borderBottom: "1px solid var(--border-subtle)" }}
+    >
+      <td
+        className="py-2.5 px-4 text-xs"
+        style={{ color: "var(--ink-secondary)" }}
+      >
         {label}
       </td>
-      <td className="py-3 px-4 text-sm font-semibold text-white text-right">
+      <td
+        className="py-2.5 px-4 text-xs text-right font-mono tabular-nums"
+        style={{ color: "var(--ink-primary)" }}
+      >
         {value !== undefined && value !== null
           ? isPercentage
             ? formatPercentage(value)
             : formatRatio(value)
-          : "N/A"}
+          : <span style={{ color: "var(--ink-disabled)" }}>—</span>}
+      </td>
+    </tr>
+  );
+
+  const SectionHeader = ({ label }: { label: string }) => (
+    <tr>
+      <td
+        colSpan={2}
+        className="px-4 pt-5 pb-1.5 text-xs font-semibold uppercase tracking-widest"
+        style={{ color: "var(--ink-tertiary)" }}
+      >
+        {label}
       </td>
     </tr>
   );
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-200 mb-2 flex items-center gap-2">
-        <Calculator className="w-5 h-5 text-green-400" />
-        Key Financial Ratios
-      </h2>
-      
-      {/* Info banner explaining data source */}
-      <div className="mb-4 p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
-        <p className="text-xs text-blue-300">
-          <strong>Data Source:</strong> All ratios use data from the{" "}
-          <strong>most recent annual report (10-K)</strong> which contains 12 months
-          of complete financial data.
-        </p>
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--border-default)" }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          Key Financial Ratios
+        </h2>
+        <span
+          className="text-xs font-mono"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          10-K Annual
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Profitability Ratios */}
-        <div>
-          <h3 className="text-md font-semibold text-green-400 mb-3">
-            Profitability Ratios
-          </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2">
+        {/* Left column */}
+        <div style={{ borderRight: "1px solid var(--border-subtle)" }}>
           <table className="w-full">
             <tbody>
+              <SectionHeader label="Profitability" />
               <RatioRow
                 label="Gross Margin"
                 value={ratios.grossMargin}
-                isPercentage={true}
-                tooltip="(Revenue - COGS) / Revenue"
+                isPercentage
+                tooltip="(Revenue − COGS) / Revenue"
               />
               <RatioRow
                 label="Operating Margin"
                 value={ratios.operatingMargin}
-                isPercentage={true}
+                isPercentage
                 tooltip="Operating Income / Revenue"
               />
               <RatioRow
                 label="Net Margin"
                 value={ratios.netMargin}
-                isPercentage={true}
+                isPercentage
                 tooltip="Net Income / Revenue"
               />
               <RatioRow
-                label="ROE (Return on Equity)"
+                label="ROE"
                 value={ratios.roe}
-                isPercentage={true}
+                isPercentage
                 tooltip="Net Income / Shareholders' Equity"
               />
               <RatioRow
-                label="ROA (Return on Assets)"
+                label="ROA"
                 value={ratios.roa}
-                isPercentage={true}
+                isPercentage
                 tooltip="Net Income / Total Assets"
+              />
+
+              <SectionHeader label="Efficiency" />
+              <RatioRow
+                label="Asset Turnover"
+                value={ratios.assetTurnover}
+                tooltip="Revenue / Total Assets"
               />
             </tbody>
           </table>
         </div>
 
-        {/* Liquidity Ratios */}
+        {/* Right column */}
         <div>
-          <h3 className="text-md font-semibold text-blue-400 mb-3">
-            Liquidity Ratios
-          </h3>
           <table className="w-full">
             <tbody>
+              <SectionHeader label="Liquidity" />
               <RatioRow
                 label="Current Ratio"
                 value={ratios.currentRatio}
@@ -192,30 +218,24 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
               <RatioRow
                 label="Quick Ratio"
                 value={ratios.quickRatio}
-                tooltip="(Current Assets - Inventory) / Current Liabilities"
+                tooltip="(Current Assets − Inventory) / Current Liabilities"
               />
               <RatioRow
                 label="Cash Ratio"
                 value={ratios.cashRatio}
                 tooltip="Cash / Current Liabilities"
               />
-            </tbody>
-          </table>
 
-          <h3 className="text-md font-semibold text-red-400 mb-3 mt-6">
-            Leverage Ratios
-          </h3>
-          <table className="w-full">
-            <tbody>
+              <SectionHeader label="Leverage" />
               <RatioRow
-                label="Debt-to-Equity"
+                label="Debt / Equity"
                 value={ratios.debtToEquity}
                 tooltip="Total Debt / Shareholders' Equity"
               />
               <RatioRow
-                label="Debt-to-Assets"
+                label="Debt / Assets"
                 value={ratios.debtToAssets}
-                isPercentage={true}
+                isPercentage
                 tooltip="Total Debt / Total Assets"
               />
               <RatioRow
@@ -226,31 +246,6 @@ export default function FinancialRatios({ data }: FinancialRatiosProps) {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Additional Ratios */}
-      <div className="mt-6">
-        <h3 className="text-md font-semibold text-purple-400 mb-3">
-          Efficiency Ratios
-        </h3>
-        <table className="w-full">
-          <tbody>
-            <RatioRow
-              label="Asset Turnover"
-              value={ratios.assetTurnover}
-              tooltip="Revenue / Total Assets"
-            />
-          </tbody>
-        </table>
-      </div>
-
-      {/* Info Banner */}
-      <div className="mt-6 p-4 bg-green-900/30 border border-green-700/50 rounded-lg">
-        <p className="text-sm text-green-300">
-          <strong>📊 About these ratios:</strong> All ratios are calculated
-          using official data from the most recent 10-K annual filing. These are
-          standard financial ratios used in fundamental analysis.
-        </p>
       </div>
     </div>
   );

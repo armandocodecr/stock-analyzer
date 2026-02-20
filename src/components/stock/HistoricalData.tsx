@@ -2,7 +2,6 @@
 
 import { StockData } from "@/types/stock";
 import { formatLargeNumber } from "@/lib/utils/formatters";
-import { TrendingUp } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -21,10 +20,21 @@ interface HistoricalDataProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl">
-        <p className="text-sm font-semibold text-gray-200 mb-2">{label}</p>
+      <div
+        className="px-3 py-2.5 rounded text-xs"
+        style={{
+          background: "var(--surface-raised)",
+          border: "1px solid var(--border-strong)",
+        }}
+      >
+        <p
+          className="font-mono font-semibold mb-1.5"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          {label}
+        </p>
         {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
+          <p key={index} className="font-mono" style={{ color: entry.color }}>
             {entry.name}: {formatLargeNumber(entry.value)}
           </p>
         ))}
@@ -34,470 +44,243 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const deduplicateByFiscalYear = <T extends { fiscalYear: number; endDate: string }>(
+const deduplicateByFiscalYear = <
+  T extends { fiscalYear: number; endDate: string }
+>(
   data: T[]
 ): T[] => {
   const map = new Map<number, T>();
-  
   data.forEach((item) => {
     const existing = map.get(item.fiscalYear);
     if (!existing || new Date(item.endDate) > new Date(existing.endDate)) {
       map.set(item.fiscalYear, item);
     }
   });
-  
   return Array.from(map.values()).sort((a, b) => a.fiscalYear - b.fiscalYear);
+};
+
+const chartColors = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+];
+
+type MetricSection = {
+  title: string;
+  data: Array<{ fiscalYear: number; endDate: string; value: number }>;
+  chartColor: string;
+  chartName: string;
+  valueColor?: (v: number) => string;
 };
 
 export default function HistoricalData({ data }: HistoricalDataProps) {
   const historical = data.historicalAnnual;
+  if (!historical) return null;
 
-  if (!historical) {
-    return null;
-  }
+  const uniqueRevenue = historical.revenue
+    ? deduplicateByFiscalYear(historical.revenue)
+    : [];
+  const uniqueNetIncome = historical.netIncome
+    ? deduplicateByFiscalYear(historical.netIncome)
+    : [];
+  const uniqueTotalAssets = historical.totalAssets
+    ? deduplicateByFiscalYear(historical.totalAssets)
+    : [];
+  const uniqueOperatingCashFlow = historical.operatingCashFlow
+    ? deduplicateByFiscalYear(historical.operatingCashFlow)
+    : [];
+  const uniqueFreeCashFlow = historical.freeCashFlow
+    ? deduplicateByFiscalYear(historical.freeCashFlow)
+    : [];
 
-  const uniqueRevenue = historical.revenue ? deduplicateByFiscalYear(historical.revenue) : [];
-  const uniqueNetIncome = historical.netIncome ? deduplicateByFiscalYear(historical.netIncome) : [];
-  const uniqueTotalAssets = historical.totalAssets ? deduplicateByFiscalYear(historical.totalAssets) : [];
-  const uniqueOperatingCashFlow = historical.operatingCashFlow ? deduplicateByFiscalYear(historical.operatingCashFlow) : [];
-  const uniqueFreeCashFlow = historical.freeCashFlow ? deduplicateByFiscalYear(historical.freeCashFlow) : [];
-
-  // Reversed arrays for tables (newest to oldest)
-  const reversedRevenue = [...uniqueRevenue].reverse();
-  const reversedNetIncome = [...uniqueNetIncome].reverse();
-  const reversedTotalAssets = [...uniqueTotalAssets].reverse();
-  const reversedOperatingCashFlow = [...uniqueOperatingCashFlow].reverse();
-  const reversedFreeCashFlow = [...uniqueFreeCashFlow].reverse();
+  const sections: MetricSection[] = [
+    {
+      title: "Revenue (Annual)",
+      data: uniqueRevenue,
+      chartColor: chartColors[0],
+      chartName: "Revenue",
+    },
+    {
+      title: "Net Income (Annual)",
+      data: uniqueNetIncome,
+      chartColor: chartColors[1],
+      chartName: "Net Income",
+      valueColor: (v) =>
+        v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
+    },
+    {
+      title: "Total Assets (Annual)",
+      data: uniqueTotalAssets,
+      chartColor: chartColors[2],
+      chartName: "Total Assets",
+    },
+    {
+      title: "Operating Cash Flow (Annual)",
+      data: uniqueOperatingCashFlow,
+      chartColor: chartColors[3],
+      chartName: "Operating Cash Flow",
+      valueColor: (v) =>
+        v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
+    },
+    {
+      title: "Free Cash Flow (Annual)",
+      data: uniqueFreeCashFlow,
+      chartColor: "var(--chart-1)",
+      chartName: "Free Cash Flow",
+      valueColor: (v) =>
+        v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
+    },
+  ].filter((s) => s.data.length > 0);
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-indigo-400" />
-        Historical Annual Data (10-K Filings)
-      </h2>
-
-      <p className="text-sm text-gray-300 mb-6">
-        Official data from annual 10-K filings. All values are as reported by the company to the SEC.
-      </p>
-
-      <div className="space-y-8">
-        {/* Revenue History */}
-        {uniqueRevenue.length > 0 && (
-          <div>
-            <h3 className="text-md font-semibold text-gray-200 mb-3">
-              Revenue (Annual)
-            </h3>
-            
-            {/* Revenue Chart */}
-            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={uniqueRevenue.map((item) => ({
-                      year: `FY ${item.fiscalYear}`,
-                      value: item.value,
-                    }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="year" 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => formatLargeNumber(value)}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="Revenue"
-                    stroke="#8B5CF6"
-                    strokeWidth={2}
-                    dot={{ fill: '#8B5CF6', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Revenue Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                      Fiscal Year
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Revenue
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Period End
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reversedRevenue.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold text-white">
-                        FY {item.fiscalYear}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-semibold text-white text-right">
-                        {formatLargeNumber(item.value)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-300 text-right">
-                        {new Date(item.endDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Net Income History */}
-        {uniqueNetIncome.length > 0 && (
-          <div>
-            <h3 className="text-md font-semibold text-gray-200 mb-3">
-              Net Income (Annual)
-            </h3>
-
-            {/* Net Income Chart */}
-            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={uniqueNetIncome.map((item) => ({
-                      year: `FY ${item.fiscalYear}`,
-                      value: item.value,
-                    }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="year" 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => formatLargeNumber(value)}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="Net Income"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    dot={{ fill: '#10B981', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Net Income Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                      Fiscal Year
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Net Income
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Period End
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reversedNetIncome.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold text-white">
-                        FY {item.fiscalYear}
-                      </td>
-                      <td className={`py-3 px-4 text-sm font-semibold text-right ${item.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {formatLargeNumber(item.value)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-300 text-right">
-                        {new Date(item.endDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Total Assets History */}
-        {uniqueTotalAssets.length > 0 && (
-          <div>
-            <h3 className="text-md font-semibold text-gray-200 mb-3">
-              Total Assets (Annual)
-            </h3>
-
-            {/* Total Assets Chart */}
-            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={uniqueTotalAssets.map((item) => ({
-                      year: `FY ${item.fiscalYear}`,
-                      value: item.value,
-                    }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="year" 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => formatLargeNumber(value)}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="Total Assets"
-                    stroke="#3B82F6"
-                    strokeWidth={2}
-                    dot={{ fill: '#3B82F6', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Total Assets Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                      Fiscal Year
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Total Assets
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Period End
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reversedTotalAssets.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold text-white">
-                        FY {item.fiscalYear}
-                      </td>
-                      <td className="py-3 px-4 text-sm font-semibold text-white text-right">
-                        {formatLargeNumber(item.value)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-300 text-right">
-                        {new Date(item.endDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Operating Cash Flow History */}
-        {uniqueOperatingCashFlow.length > 0 && (
-          <div>
-            <h3 className="text-md font-semibold text-gray-200 mb-3">
-              Operating Cash Flow (Annual)
-            </h3>
-
-            {/* Operating Cash Flow Chart */}
-            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={uniqueOperatingCashFlow.map((item) => ({
-                      year: `FY ${item.fiscalYear}`,
-                      value: item.value,
-                    }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="year" 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => formatLargeNumber(value)}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="Operating Cash Flow"
-                    stroke="#F59E0B"
-                    strokeWidth={2}
-                    dot={{ fill: '#F59E0B', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Operating Cash Flow Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                      Fiscal Year
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Operating Cash Flow
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Period End
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reversedOperatingCashFlow.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold text-white">
-                        FY {item.fiscalYear}
-                      </td>
-                      <td className={`py-3 px-4 text-sm font-semibold text-right ${item.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {formatLargeNumber(item.value)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-300 text-right">
-                        {new Date(item.endDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Free Cash Flow History */}
-        {uniqueFreeCashFlow.length > 0 && (
-          <div>
-            <h3 className="text-md font-semibold text-gray-200 mb-3">
-              Free Cash Flow (Annual)
-            </h3>
-
-            {/* Free Cash Flow Chart */}
-            <div className="mb-6 bg-gray-900/50 rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={uniqueFreeCashFlow.map((item) => ({
-                      year: `FY ${item.fiscalYear}`,
-                      value: item.value,
-                    }))}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="year" 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="#9CA3AF"
-                    style={{ fontSize: '12px' }}
-                    tickFormatter={(value) => formatLargeNumber(value)}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: '#9CA3AF' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="Free Cash Flow"
-                    stroke="#EC4899"
-                    strokeWidth={2}
-                    dot={{ fill: '#EC4899', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Free Cash Flow Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                      Fiscal Year
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Free Cash Flow
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                      Period End
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reversedFreeCashFlow.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-3 px-4 text-sm font-semibold text-white">
-                        FY {item.fiscalYear}
-                      </td>
-                      <td className={`py-3 px-4 text-sm font-semibold text-right ${item.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {formatLargeNumber(item.value)}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-300 text-right">
-                        {new Date(item.endDate).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--border-default)" }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          Historical Annual Data
+        </h2>
+        <span
+          className="text-xs font-mono"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          10-K Filings
+        </span>
       </div>
 
-      {/* Info Banner */}
-      <div className="mt-6 p-4 bg-indigo-900/30 border border-indigo-700/50 rounded-lg">
-        <p className="text-sm text-indigo-300">
-          <strong>📊 About this data:</strong> All values come directly from annual 10-K filings submitted to the SEC. 
-          This data represents official company reports and has not been adjusted or calculated by this application.
-        </p>
+      <div className="p-4 space-y-10">
+        {sections.map((section) => (
+          <div key={section.title}>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              {section.title}
+            </p>
+
+            {/* Chart */}
+            <div
+              className="rounded mb-4 p-4"
+              style={{ background: "var(--surface-inset)" }}
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart
+                  data={section.data.map((item) => ({
+                    year: `FY ${item.fiscalYear}`,
+                    value: item.value,
+                  }))}
+                  margin={{ top: 4, right: 20, left: 10, bottom: 4 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border-subtle)"
+                  />
+                  <XAxis
+                    dataKey="year"
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <YAxis
+                    stroke="var(--ink-disabled)"
+                    style={{ fontSize: "10px", fontFamily: "monospace" }}
+                    tickFormatter={(v) => formatLargeNumber(v)}
+                    tick={{ fill: "var(--ink-tertiary)" }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    wrapperStyle={{
+                      color: "var(--ink-tertiary)",
+                      fontSize: "10px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name={section.chartName}
+                    stroke={section.chartColor}
+                    strokeWidth={1.5}
+                    dot={{ fill: section.chartColor, r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Table */}
+            <table className="w-full">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                  <th
+                    className="text-left py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    Fiscal Year
+                  </th>
+                  <th
+                    className="text-right py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    {section.chartName}
+                  </th>
+                  <th
+                    className="text-right py-2 px-4 text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    Period End
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...section.data].reverse().map((item, idx) => (
+                  <tr
+                    key={idx}
+                    style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                  >
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono font-semibold"
+                      style={{ color: "var(--ink-secondary)" }}
+                    >
+                      FY {item.fiscalYear}
+                    </td>
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono tabular-nums text-right font-semibold"
+                      style={{
+                        color: section.valueColor
+                          ? section.valueColor(item.value)
+                          : "var(--ink-primary)",
+                      }}
+                    >
+                      {formatLargeNumber(item.value)}
+                    </td>
+                    <td
+                      className="py-2.5 px-4 text-xs font-mono text-right"
+                      style={{ color: "var(--ink-tertiary)" }}
+                    >
+                      {new Date(item.endDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
       </div>
     </div>
   );
