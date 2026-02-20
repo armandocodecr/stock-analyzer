@@ -37,32 +37,31 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const params = await props.params;
   const ticker = (params.ticker as string) || "";
-
   return {
-    title: `${ticker.toUpperCase()} - SEC Filing Analyzer`,
+    title: `${ticker.toUpperCase()} — SEC Filing Analyzer`,
     description: `Comprehensive financial analysis of ${ticker.toUpperCase()} from official SEC filings including quarterly data, material events, and insider trading`,
   };
 }
 
 async function getStockData(ticker: string): Promise<StockData | null> {
   try {
-    // Priority: 1) Custom NEXT_PUBLIC_BASE_URL, 2) VERCEL_URL, 3) localhost
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      || "http://localhost:3000";
-    
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : null) ||
+      "http://localhost:3000";
+
     console.log("[STOCK PAGE] Fetching stock data for:", ticker, "from:", baseUrl);
-    
+
     const response = await fetch(`${baseUrl}/api/stock/${ticker}`, {
       next: { revalidate: 0 },
-      cache: 'no-store'
+      cache: "no-store",
     });
 
     console.log("[STOCK PAGE] Response status:", response.status);
 
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
     console.log("[STOCK PAGE] Successfully fetched stock data");
@@ -73,6 +72,20 @@ async function getStockData(ticker: string): Promise<StockData | null> {
   }
 }
 
+const TabFallback = () => (
+  <div
+    className="rounded-lg p-6"
+    style={{
+      background: "var(--surface)",
+      border: "1px solid var(--border-default)",
+    }}
+  >
+    <p className="text-xs" style={{ color: "var(--ink-tertiary)" }}>
+      Loading…
+    </p>
+  </div>
+);
+
 export default async function StockPage(props: { params: Promise<Params> }) {
   const params = await props.params;
   const ticker = (params.ticker as string) || "";
@@ -82,14 +95,18 @@ export default async function StockPage(props: { params: Promise<Params> }) {
 
   if (!stockData) {
     return (
-      <div className="min-h-screen bg-gray-900 py-12">
-        <div className="container mx-auto px-4">
+      <div
+        className="min-h-screen py-12"
+        style={{ background: "var(--canvas)" }}
+      >
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="mb-6">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300"
+              className="inline-flex items-center gap-2 text-sm transition-colors"
+              style={{ color: "var(--ink-tertiary)" }}
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               Back to search
             </Link>
           </div>
@@ -100,24 +117,24 @@ export default async function StockPage(props: { params: Promise<Params> }) {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+    <div className="min-h-screen py-8" style={{ background: "var(--canvas)" }}>
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* Back Button */}
-        <div className="mb-6">
+        {/* Back link */}
+        <div className="mb-5">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium"
+            className="ink-link inline-flex items-center gap-2 text-xs font-medium"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3 h-3" />
             Search another ticker
           </Link>
         </div>
 
-        {/* Company Overview - Always Visible */}
+        {/* Company masthead */}
         <CompanyOverview data={stockData} />
 
-        {/* Tabbed Content */}
-        <div className="mt-6">
+        {/* Tabbed content */}
+        <div className="mt-4">
           <Tabs
             defaultTab="overview"
             tabs={[
@@ -126,24 +143,14 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                 label: "Overview",
                 icon: <BarChart3 />,
                 content: (
-                  <div className="space-y-6">
-                    {/* TradingView Chart */}
-                    <TradingViewChart ticker={normalizedTicker} exchange={stockData.exchange} />
-
-                    {/* Key Financial Ratios */}
+                  <div className="space-y-4">
+                    <TradingViewChart
+                      ticker={normalizedTicker}
+                      exchange={stockData.exchange}
+                    />
                     <FinancialRatios data={stockData} />
-
-                    {/* Quarterly Trends */}
                     {stockData.quarterly && (
-                      <Suspense
-                        fallback={
-                          <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-                            <p className="text-sm text-gray-400">
-                              Loading quarterly data...
-                            </p>
-                          </div>
-                        }
-                      >
+                      <Suspense fallback={<TabFallback />}>
                         <QuarterlyTrends data={stockData} />
                       </Suspense>
                     )}
@@ -152,7 +159,7 @@ export default async function StockPage(props: { params: Promise<Params> }) {
               },
               {
                 id: "income-statement",
-                label: "Income Statement",
+                label: "Income",
                 icon: <DollarSign />,
                 content: <IncomeStatement data={stockData} />,
               },
@@ -170,32 +177,20 @@ export default async function StockPage(props: { params: Promise<Params> }) {
               },
               {
                 id: "historical",
-                label: "Historical Data",
+                label: "Historical",
                 icon: <TrendingUp />,
                 content: stockData.historicalAnnual ? (
                   <HistoricalData data={stockData} />
                 ) : (
-                  <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-                    <p className="text-sm text-gray-400">
-                      No historical data available
-                    </p>
-                  </div>
+                  <TabFallback />
                 ),
               },
               {
                 id: "events",
-                label: "Material Events",
+                label: "Events",
                 icon: <Bell />,
                 content: (
-                  <Suspense
-                    fallback={
-                      <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-                        <p className="text-sm text-gray-400">
-                          Loading material events...
-                        </p>
-                      </div>
-                    }
-                  >
+                  <Suspense fallback={<TabFallback />}>
                     <MaterialEvents
                       ticker={normalizedTicker}
                       cik={stockData.cik}
@@ -205,18 +200,10 @@ export default async function StockPage(props: { params: Promise<Params> }) {
               },
               {
                 id: "insiders",
-                label: "Insider Activity",
+                label: "Insiders",
                 icon: <Users />,
                 content: (
-                  <Suspense
-                    fallback={
-                      <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-                        <p className="text-sm text-gray-400">
-                          Loading insider activity...
-                        </p>
-                      </div>
-                    }
-                  >
+                  <Suspense fallback={<TabFallback />}>
                     <InsiderActivity
                       ticker={normalizedTicker}
                       cik={stockData.cik}
@@ -228,7 +215,7 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                 ? [
                     {
                       id: "ai-analysis",
-                      label: "IA",
+                      label: "AI",
                       icon: <Brain />,
                       content: (
                         <AIAnalysis
@@ -241,15 +228,30 @@ export default async function StockPage(props: { params: Promise<Params> }) {
                 : [
                     {
                       id: "ai-locked",
-                      label: "IA",
+                      label: "AI",
                       icon: <Lock />,
                       content: (
-                        <div className="bg-gray-800 border border-gray-700 rounded-xl p-12 text-center">
-                          <Lock className="w-20 h-20 text-gray-600 mx-auto mb-6" />
-                          <h3 className="text-2xl font-bold text-gray-400 mb-3">
+                        <div
+                          className="rounded-lg p-16 text-center"
+                          style={{
+                            background: "var(--surface)",
+                            border: "1px solid var(--border-default)",
+                          }}
+                        >
+                          <Lock
+                            className="w-10 h-10 mx-auto mb-4"
+                            style={{ color: "var(--ink-disabled)" }}
+                          />
+                          <p
+                            className="text-sm font-semibold mb-2"
+                            style={{ color: "var(--ink-secondary)" }}
+                          >
                             AI Analysis
-                          </h3>
-                          <p className="text-gray-500 text-base max-w-xl mx-auto">
+                          </p>
+                          <p
+                            className="text-xs"
+                            style={{ color: "var(--ink-tertiary)" }}
+                          >
                             This feature will be available soon.
                           </p>
                         </div>
@@ -261,17 +263,18 @@ export default async function StockPage(props: { params: Promise<Params> }) {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-12 p-6 bg-yellow-900/20 border border-yellow-700/50 rounded-xl">
-          <h3 className="font-semibold text-yellow-400 mb-2">
-            ⚠️ Important Notice
-          </h3>
-          <p className="text-sm text-yellow-200/80">
-            All data presented is extracted from official SEC filings (10-K
-            annual reports, 10-Q quarterly reports, 8-K material events, and
-            Forms 4 insider trading). This information is for educational and
-            informational purposes only. It does not constitute financial,
-            investment, or legal advice. Always consult with a professional
-            financial advisor before making investment decisions.
+        <div
+          className="mt-10 px-5 py-3 rounded-lg"
+          style={{
+            background: "var(--warning-muted)",
+            border: "1px solid rgba(217,119,6,0.2)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--ink-tertiary)" }}>
+            <span style={{ color: "var(--warning-text)" }}>Notice — </span>
+            All data is extracted from official SEC filings (10-K, 10-Q, 8-K,
+            Form 4). For educational and informational purposes only. Does not
+            constitute financial, investment, or legal advice.
           </p>
         </div>
       </div>
