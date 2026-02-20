@@ -1,12 +1,11 @@
 import { StockData } from "@/types/stock";
-import { Building2, FileText, Calendar, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface CompanyOverviewProps {
   data: StockData;
 }
 
 export default function CompanyOverview({ data }: CompanyOverviewProps) {
-  // Calculate days since last filing
   const daysOld = data.filingDate
     ? Math.floor(
         (Date.now() - new Date(data.filingDate).getTime()) /
@@ -15,101 +14,181 @@ export default function CompanyOverview({ data }: CompanyOverviewProps) {
     : null;
 
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <Building2 className="w-8 h-8 text-blue-400" />
-            <div>
-              <h1 className="text-3xl font-bold text-white">{data.name}</h1>
-              <p className="text-lg text-gray-300">{data.symbol}</p>
+    <div
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+        borderRadius: "8px",
+        overflow: "hidden",
+      }}
+    >
+      {/* Masthead */}
+      <div className="px-6 pt-6 pb-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            {/* Ticker + exchange */}
+            <div className="flex items-center gap-3 mb-1">
+              <span
+                className="font-mono text-2xl font-bold tracking-wider"
+                style={{ color: "var(--accent-text)" }}
+              >
+                {data.symbol}
+              </span>
+              {data.exchange && (
+                <span
+                  className="text-xs font-mono tracking-widest px-2 py-0.5 rounded"
+                  style={{
+                    background: "var(--accent-muted)",
+                    color: "var(--accent-text)",
+                    border: "1px solid rgba(59,130,246,0.2)",
+                  }}
+                >
+                  {data.exchange}
+                </span>
+              )}
             </div>
-          </div>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-gray-400">CIK Number</p>
-              <p className="text-lg font-semibold text-white">{data.cik}</p>
-            </div>
+            {/* Company name */}
+            <h1
+              className="text-xl font-semibold leading-tight"
+              style={{ color: "var(--ink-primary)" }}
+            >
+              {data.name}
+            </h1>
 
+            {/* Sector */}
             {data.sector && (
-              <div>
-                <p className="text-sm text-gray-400">Sector</p>
-                <p className="text-lg font-semibold text-white">
-                  {data.sector}
-                </p>
-              </div>
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--ink-tertiary)" }}
+              >
+                {data.sector}
+              </p>
             )}
-
-            <div>
-              <p className="text-sm text-gray-400">Data Source</p>
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-green-400" />
-                <p className="text-lg font-semibold text-green-400">
-                  SEC EDGAR
-                </p>
-              </div>
-            </div>
           </div>
 
-          {/* Filing Dates */}
-          {data.filingDate && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-gray-400 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  Last Filing Date
-                </p>
-                <p className="text-md font-semibold text-white">
-                  {new Date(data.filingDate).toLocaleDateString()}
-                </p>
-                {daysOld !== null && (
-                  <p className="text-xs text-gray-400">({daysOld} days ago)</p>
-                )}
-              </div>
-
-              {data.periodEndDate && (
-                <div>
-                  <p className="text-sm text-gray-400">Period Ending</p>
-                  <p className="text-md font-semibold text-white">
-                    {new Date(data.periodEndDate).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-
-              {data.fiscalYear && (
-                <div>
-                  <p className="text-sm text-gray-400">Fiscal Year</p>
-                  <p className="text-md font-semibold text-white">
-                    FY {data.fiscalYear}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Data source badge */}
+          <div
+            className="text-right shrink-0"
+          >
+            <p
+              className="text-xs font-mono tracking-widest uppercase"
+              style={{ color: "var(--positive-text)" }}
+            >
+              SEC EDGAR
+            </p>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              CIK {data.cik}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Info Banner */}
-      <div className="mt-6 p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
-        <p className="text-sm text-blue-300">
-          <strong>Data from official SEC filings (10-K Annual Reports).</strong> All financial data displayed is extracted directly from the company's most recent 10-K annual report filed with the US Securities and Exchange Commission. No calculations or adjustments have been made to ensure maximum accuracy.
-        </p>
-      </div>
-
-      {/* Outdated Data Warning */}
-      {daysOld !== null && daysOld > 180 && (
-        <div className="mt-4 p-4 bg-yellow-900/20 border border-yellow-300 rounded-lg flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+      {/* Filing metadata strip */}
+      <div
+        className="px-6 py-3 flex flex-wrap gap-x-8 gap-y-2"
+        style={{
+          background: "var(--surface-inset)",
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
+        {data.filingDate && (
           <div>
-            <p className="text-sm font-semibold text-yellow-400">
-              Data May Be Outdated
+            <p
+              className="text-xs uppercase tracking-widest"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Last Filing
             </p>
-            <p className="text-sm text-yellow-200/80 mt-1">
-              The last filing was {daysOld} days ago. More recent quarterly data
-              may be available.
+            <p
+              className="text-xs font-mono mt-0.5"
+              style={{ color: "var(--ink-secondary)" }}
+            >
+              {new Date(data.filingDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+              {daysOld !== null && (
+                <span style={{ color: "var(--ink-tertiary)" }}>
+                  {" "}· {daysOld}d ago
+                </span>
+              )}
             </p>
           </div>
+        )}
+        {data.periodEndDate && (
+          <div>
+            <p
+              className="text-xs uppercase tracking-widest"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Period End
+            </p>
+            <p
+              className="text-xs font-mono mt-0.5"
+              style={{ color: "var(--ink-secondary)" }}
+            >
+              {new Date(data.periodEndDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+        )}
+        {data.fiscalYear && (
+          <div>
+            <p
+              className="text-xs uppercase tracking-widest"
+              style={{ color: "var(--ink-tertiary)" }}
+            >
+              Fiscal Year
+            </p>
+            <p
+              className="text-xs font-mono mt-0.5"
+              style={{ color: "var(--ink-secondary)" }}
+            >
+              FY {data.fiscalYear}
+            </p>
+          </div>
+        )}
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Source
+          </p>
+          <p
+            className="text-xs font-mono mt-0.5"
+            style={{ color: "var(--ink-secondary)" }}
+          >
+            10-K Annual Report
+          </p>
+        </div>
+      </div>
+
+      {/* Stale data warning */}
+      {daysOld !== null && daysOld > 180 && (
+        <div
+          className="px-6 py-3 flex items-start gap-3"
+          style={{
+            background: "var(--warning-muted)",
+            borderTop: "1px solid rgba(217,119,6,0.25)",
+          }}
+        >
+          <AlertTriangle
+            className="w-4 h-4 shrink-0 mt-0.5"
+            style={{ color: "var(--warning)" }}
+          />
+          <p className="text-xs" style={{ color: "var(--warning-text)" }}>
+            Last filing was {daysOld} days ago. More recent quarterly data may
+            be available.
+          </p>
         </div>
       )}
     </div>
