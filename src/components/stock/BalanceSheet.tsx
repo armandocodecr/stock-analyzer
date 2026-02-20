@@ -2,7 +2,6 @@
 
 import { StockData } from "@/types/stock";
 import { formatLargeNumber } from "@/lib/utils/formatters";
-import { Scale } from "lucide-react";
 
 interface BalanceSheetProps {
   data: StockData;
@@ -25,148 +24,115 @@ export default function BalanceSheet({ data }: BalanceSheetProps) {
     isTotal?: boolean;
   }) => (
     <tr
-      className={`border-b border-gray-700 hover:bg-gray-900 ${
-        isTotal ? "bg-blue-900/30 font-bold" : ""
-      }`}
+      style={{
+        borderBottom: "1px solid var(--border-subtle)",
+        background: isTotal ? "var(--surface-inset)" : "transparent",
+      }}
     >
       <td
-        className={`py-3 px-4 text-sm ${
-          isSubItem ? "pl-8 text-gray-300" : "text-gray-200"
-        } ${isBold || isTotal ? "font-semibold" : ""}`}
+        className={`py-2.5 px-4 text-xs ${isSubItem ? "pl-8" : ""}`}
+        style={{
+          color: isTotal || isBold
+            ? "var(--ink-primary)"
+            : isSubItem
+            ? "var(--ink-tertiary)"
+            : "var(--ink-secondary)",
+          fontWeight: isTotal || isBold ? 600 : 400,
+        }}
       >
         {label}
       </td>
       <td
-        className={`py-3 px-4 text-sm text-right ${
-          isBold || isTotal
-            ? "font-bold text-white"
-            : "font-semibold text-gray-200"
-        }`}
+        className="py-2.5 px-4 text-xs text-right font-mono tabular-nums"
+        style={{
+          color: isTotal || isBold ? "var(--ink-primary)" : "var(--ink-secondary)",
+          fontWeight: isTotal || isBold ? 600 : 400,
+        }}
       >
         {formatLargeNumber(value)}
       </td>
     </tr>
   );
 
+  const SectionDivider = ({ label }: { label: string }) => (
+    <tr>
+      <td
+        colSpan={2}
+        className="px-4 pt-5 pb-1.5 text-xs font-semibold uppercase tracking-widest"
+        style={{
+          color: "var(--ink-tertiary)",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
+        {label}
+      </td>
+    </tr>
+  );
+
   return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-        <Scale className="w-5 h-5 text-blue-400" />
-        Balance Sheet (from 10-K Filing)
-      </h2>
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--border-default)" }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          Balance Sheet
+        </h2>
+        <span
+          className="text-xs font-mono"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          10-K Annual
+        </span>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b-2 border-gray-600">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-gray-200">
-                Item
+            <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+              <th
+                className="text-left py-2.5 px-4 text-xs font-semibold uppercase tracking-widest"
+                style={{ color: "var(--ink-tertiary)" }}
+              >
+                Line Item
               </th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-gray-200">
-                Amount (USD)
+              <th
+                className="text-right py-2.5 px-4 text-xs font-semibold uppercase tracking-widest"
+                style={{ color: "var(--ink-tertiary)" }}
+              >
+                USD
               </th>
             </tr>
           </thead>
           <tbody>
-            {/* ASSETS SECTION */}
-            <tr className="bg-green-900/30">
-              <td
-                colSpan={2}
-                className="py-2 px-4 text-sm font-bold text-green-400 uppercase"
-              >
-                Assets
-              </td>
-            </tr>
+            <SectionDivider label="Assets" />
+            <DataRow label="Current Assets" value={metrics.currentAssets} isBold />
+            <DataRow label="Cash & Equivalents" value={metrics.cash} isSubItem />
+            <DataRow label="Accounts Receivable" value={metrics.accountsReceivable} isSubItem />
+            <DataRow label="Inventory" value={metrics.inventory} isSubItem />
+            <DataRow label="Property, Plant & Equipment" value={metrics.propertyPlantEquipment} isBold />
+            <DataRow label="Total Assets" value={metrics.totalAssets} isTotal />
 
-            {/* Current Assets */}
-            <DataRow
-              label="Current Assets"
-              value={metrics.currentAssets}
-              isBold
-            />
-            <DataRow
-              label="Cash & Cash Equivalents"
-              value={metrics.cash}
-              isSubItem
-            />
-            <DataRow
-              label="Accounts Receivable"
-              value={metrics.accountsReceivable}
-              isSubItem
-            />
-            <DataRow
-              label="Inventory"
-              value={metrics.inventory}
-              isSubItem
-            />
+            <SectionDivider label="Liabilities" />
+            <DataRow label="Current Liabilities" value={metrics.currentLiabilities} isBold />
+            <DataRow label="Short-term Debt" value={metrics.shortTermDebt} isSubItem />
+            <DataRow label="Accounts Payable" value={metrics.accountsPayable} isSubItem />
+            <DataRow label="Long-term Debt" value={metrics.longTermDebt} isBold />
+            <DataRow label="Total Liabilities" value={metrics.totalLiabilities} isTotal />
 
-            {/* Non-Current Assets */}
+            <SectionDivider label="Equity" />
             <DataRow
-              label="Property, Plant & Equipment (PP&E)"
-              value={metrics.propertyPlantEquipment}
-              isBold
-            />
-
-            {/* Total Assets */}
-            <DataRow
-              label="TOTAL ASSETS"
-              value={metrics.totalAssets}
-              isTotal
-            />
-
-            {/* LIABILITIES SECTION */}
-            <tr className="bg-red-900/30">
-              <td
-                colSpan={2}
-                className="py-2 px-4 text-sm font-bold text-red-400 uppercase"
-              >
-                Liabilities
-              </td>
-            </tr>
-
-            {/* Current Liabilities */}
-            <DataRow
-              label="Current Liabilities"
-              value={metrics.currentLiabilities}
-              isBold
-            />
-            <DataRow
-              label="Short-term Debt"
-              value={metrics.shortTermDebt}
-              isSubItem
-            />
-            <DataRow
-              label="Accounts Payable"
-              value={metrics.accountsPayable}
-              isSubItem
-            />
-
-            {/* Long-term Liabilities */}
-            <DataRow
-              label="Long-term Debt"
-              value={metrics.longTermDebt}
-              isBold
-            />
-
-            {/* Total Liabilities */}
-            <DataRow
-              label="TOTAL LIABILITIES"
-              value={metrics.totalLiabilities}
-              isTotal
-            />
-
-            {/* EQUITY SECTION */}
-            <tr className="bg-indigo-900/30">
-              <td
-                colSpan={2}
-                className="py-2 px-4 text-sm font-bold text-indigo-300 uppercase"
-              >
-                Shareholders' Equity
-              </td>
-            </tr>
-
-            <DataRow
-              label="TOTAL SHAREHOLDERS' EQUITY"
+              label="Total Shareholders' Equity"
               value={metrics.stockholdersEquity}
               isTotal
             />
@@ -174,25 +140,23 @@ export default function BalanceSheet({ data }: BalanceSheetProps) {
         </table>
       </div>
 
-      {/* Balance Sheet Equation Verification */}
-      {metrics.totalAssets &&
-        metrics.totalLiabilities &&
-        metrics.stockholdersEquity && (
-          <div className="mt-6 p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
-            <p className="text-sm text-blue-300 font-semibold mb-2">
-              📐 Balance Sheet Equation:
-            </p>
-            <p className="text-sm text-blue-300">
-              <strong>Assets</strong> = <strong>Liabilities</strong> +{" "}
-              <strong>Equity</strong>
-            </p>
-            <p className="text-xs text-blue-300 mt-1">
-              {formatLargeNumber(metrics.totalAssets)} ={" "}
-              {formatLargeNumber(metrics.totalLiabilities)} +{" "}
-              {formatLargeNumber(metrics.stockholdersEquity)}
-            </p>
-          </div>
-        )}
+      {/* Balance equation */}
+      {metrics.totalAssets && metrics.totalLiabilities && metrics.stockholdersEquity && (
+        <div
+          className="px-4 py-2.5"
+          style={{ borderTop: "1px solid var(--border-subtle)" }}
+        >
+          <p
+            className="text-xs font-mono"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Assets = Liabilities + Equity &nbsp;·&nbsp;{" "}
+            {formatLargeNumber(metrics.totalAssets)} ={" "}
+            {formatLargeNumber(metrics.totalLiabilities)} +{" "}
+            {formatLargeNumber(metrics.stockholdersEquity)}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
