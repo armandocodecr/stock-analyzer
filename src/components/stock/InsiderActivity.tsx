@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Users,
-  TrendingUp,
-  TrendingDown,
-  ExternalLink,
-  Minus,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, ExternalLink, Minus } from "lucide-react";
 
 interface InsiderFiling {
   accessionNumber: string;
@@ -42,173 +36,224 @@ export default function InsiderActivity({ ticker, cik }: InsiderActivityProps) {
       try {
         const response = await fetch(`/api/insiders/${ticker}`);
         if (!response.ok) throw new Error("Failed to fetch insider activity");
-        const insiderData = await response.json();
-        setData(insiderData);
+        setData(await response.json());
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchInsiders();
   }, [ticker]);
 
-  const buildFilingURL = (accessionNumber: string) => {
-    return `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${accessionNumber}&xbrl_type=v`;
-  };
+  const buildFilingURL = (accessionNumber: string) =>
+    `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${accessionNumber}&xbrl_type=v`;
 
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case "bullish":
-        return "text-green-400 bg-green-900/30 border-green-300";
-      case "bearish":
-        return "text-red-400 bg-red-900/30 border-red-700/50";
-      default:
-        return "text-gray-200 bg-gray-700 border-gray-600";
-    }
-  };
-
-  const getSentimentIcon = (sentiment: string) => {
-    switch (sentiment) {
-      case "bullish":
-        return <TrendingUp className="w-5 h-5" />;
-      case "bearish":
-        return <TrendingDown className="w-5 h-5" />;
-      default:
-        return <Minus className="w-5 h-5" />;
-    }
-  };
+  const Shell = ({ children }: { children: React.ReactNode }) => (
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border-default)",
+      }}
+    >
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: "1px solid var(--border-default)" }}
+      >
+        <h2
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "var(--ink-secondary)" }}
+        >
+          Insider Activity
+        </h2>
+        <span
+          className="text-xs font-mono"
+          style={{ color: "var(--ink-tertiary)" }}
+        >
+          Form 4
+        </span>
+      </div>
+      {children}
+    </div>
+  );
 
   if (isLoading) {
     return (
-      <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-purple-400" />
-          Insider Activity (Forms 4)
-        </h2>
-        <p className="text-sm text-gray-400">Loading insider activity...</p>
-      </div>
+      <Shell>
+        <p className="px-4 py-6 text-xs" style={{ color: "var(--ink-tertiary)" }}>
+          Loading insider activity…
+        </p>
+      </Shell>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-purple-400" />
-          Insider Activity (Forms 4)
-        </h2>
-        <p className="text-sm text-red-400">
-          Error: {error || "No data available"}
+      <Shell>
+        <p className="px-4 py-6 text-xs" style={{ color: "var(--negative-text)" }}>
+          {error || "No data available"}
         </p>
-      </div>
+      </Shell>
     );
   }
 
-  return (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-700">
-      <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-        <Users className="w-5 h-5 text-purple-400" />
-        Insider Activity (Forms 4)
-      </h2>
+  const sentimentColor =
+    data.summary.sentiment === "bullish"
+      ? "var(--positive-text)"
+      : data.summary.sentiment === "bearish"
+      ? "var(--negative-text)"
+      : "var(--ink-secondary)";
 
-      {/* Sentiment Summary */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 border border-gray-700 rounded-lg">
-          <p className="text-sm text-gray-300 mb-1">Total Transactions</p>
-          <p className="text-2xl font-bold text-white">
+  const sentimentBg =
+    data.summary.sentiment === "bullish"
+      ? "var(--positive-muted)"
+      : data.summary.sentiment === "bearish"
+      ? "var(--negative-muted)"
+      : "var(--surface-inset)";
+
+  return (
+    <Shell>
+      {/* Summary bar */}
+      <div
+        className="px-4 py-3 grid grid-cols-4 gap-4"
+        style={{
+          background: "var(--surface-inset)",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Transactions
+          </p>
+          <p
+            className="text-lg font-mono font-bold mt-0.5"
+            style={{ color: "var(--ink-primary)" }}
+          >
             {data.summary.totalTransactions}
           </p>
         </div>
-
-        <div className="p-4 border border-green-700/50 rounded-lg bg-green-900/30">
-          <p className="text-sm text-green-400 mb-1">Buys</p>
-          <p className="text-2xl font-bold text-green-300">
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Buys
+          </p>
+          <p
+            className="text-lg font-mono font-bold mt-0.5"
+            style={{ color: "var(--positive-text)" }}
+          >
             {data.summary.buyTransactions}
           </p>
         </div>
-
-        <div className="p-4 border border-red-700/50 rounded-lg bg-red-900/30">
-          <p className="text-sm text-red-400 mb-1">Sells</p>
-          <p className="text-2xl font-bold text-red-900">
+        <div>
+          <p
+            className="text-xs uppercase tracking-widest"
+            style={{ color: "var(--ink-tertiary)" }}
+          >
+            Sells
+          </p>
+          <p
+            className="text-lg font-mono font-bold mt-0.5"
+            style={{ color: "var(--negative-text)" }}
+          >
             {data.summary.sellTransactions}
           </p>
         </div>
-      </div>
-
-      {/* Sentiment Indicator */}
-      <div
-        className={`mb-6 p-4 border rounded-lg flex items-center gap-3 ${getSentimentColor(
-          data.summary.sentiment
-        )}`}
-      >
-        {getSentimentIcon(data.summary.sentiment)}
-        <div>
-          <p className="font-semibold">
-            Insider Sentiment:{" "}
-            <span className="capitalize">{data.summary.sentiment}</span>
-          </p>
-          <p className="text-sm mt-1">
-            {data.summary.sentiment === "bullish"
-              ? "More insider buying than selling - potentially positive signal"
-              : data.summary.sentiment === "bearish"
-              ? "More insider selling than buying - exercise caution"
-              : "Balanced insider activity"}
-          </p>
+        <div
+          className="px-3 py-2 rounded flex items-center gap-2"
+          style={{ background: sentimentBg }}
+        >
+          {data.summary.sentiment === "bullish" ? (
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: sentimentColor }} />
+          ) : data.summary.sentiment === "bearish" ? (
+            <TrendingDown className="w-3.5 h-3.5" style={{ color: sentimentColor }} />
+          ) : (
+            <Minus className="w-3.5 h-3.5" style={{ color: sentimentColor }} />
+          )}
+          <div>
+            <p
+              className="text-xs font-semibold capitalize"
+              style={{ color: sentimentColor }}
+            >
+              {data.summary.sentiment}
+            </p>
+            <p className="text-xs" style={{ color: "var(--ink-tertiary)" }}>
+              Sentiment
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div>
-        <h3 className="text-md font-semibold text-gray-200 mb-3">
-          Recent Transactions (Last 20)
-        </h3>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
-          {data.filings.map((filing) => {
-            const isBuy = filing.primaryDocDescription
-              ?.toLowerCase()
-              .includes("purchase");
-            const isSell = filing.primaryDocDescription
-              ?.toLowerCase()
-              .includes("sale");
+      {/* Filings list */}
+      <div className="divide-y max-h-96 overflow-y-auto" style={{ borderColor: "var(--border-subtle)" }}>
+        {data.filings.map((filing) => {
+          const isBuy = filing.primaryDocDescription
+            ?.toLowerCase()
+            .includes("purchase");
+          const isSell = filing.primaryDocDescription
+            ?.toLowerCase()
+            .includes("sale");
 
-            return (
-              <div
-                key={filing.accessionNumber}
-                className="p-3 border border-gray-700 rounded-lg hover:shadow-md transition-shadow flex justify-between items-center"
-              >
-                <div className="flex items-center gap-3">
-                  {isBuy ? (
-                    <TrendingUp className="w-4 h-4 text-green-400 shrink-0" />
-                  ) : isSell ? (
-                    <TrendingDown className="w-4 h-4 text-red-400 shrink-0" />
-                  ) : (
-                    <Minus className="w-4 h-4 text-gray-300 shrink-0" />
-                  )}
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {new Date(filing.filingDate).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-gray-300">
-                      {filing.primaryDocDescription || "Form 4 Filing"}
-                    </p>
-                  </div>
+          return (
+            <div
+              key={filing.accessionNumber}
+              className="px-4 py-3 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                {isBuy ? (
+                  <TrendingUp
+                    className="w-3.5 h-3.5 shrink-0"
+                    style={{ color: "var(--positive-text)" }}
+                  />
+                ) : isSell ? (
+                  <TrendingDown
+                    className="w-3.5 h-3.5 shrink-0"
+                    style={{ color: "var(--negative-text)" }}
+                  />
+                ) : (
+                  <Minus
+                    className="w-3.5 h-3.5 shrink-0"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  />
+                )}
+                <div>
+                  <p
+                    className="text-xs font-mono font-semibold"
+                    style={{ color: "var(--ink-primary)" }}
+                  >
+                    {new Date(filing.filingDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <p
+                    className="text-xs mt-0.5"
+                    style={{ color: "var(--ink-tertiary)" }}
+                  >
+                    {filing.primaryDocDescription || "Form 4 Filing"}
+                  </p>
                 </div>
-                <a
-                  href={buildFilingURL(filing.accessionNumber)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-sm shrink-0"
-                >
-                  View
-                  <ExternalLink className="w-3 h-3" />
-                </a>
               </div>
-            );
-          })}
-        </div>
+              <a
+                href={buildFilingURL(filing.accessionNumber)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs shrink-0"
+                style={{ color: "var(--accent-text)" }}
+              >
+                View
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </Shell>
   );
 }
