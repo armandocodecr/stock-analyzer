@@ -106,7 +106,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
       data: uniqueNetIncome,
       chartColor: chartColors[1],
       chartName: "Net Income",
-      valueColor: (v) =>
+      valueColor: (v: number) =>
         v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
     },
     {
@@ -120,7 +120,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
       data: uniqueOperatingCashFlow,
       chartColor: chartColors[3],
       chartName: "Operating Cash Flow",
-      valueColor: (v) =>
+      valueColor: (v: number) =>
         v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
     },
     {
@@ -128,7 +128,7 @@ export default function HistoricalData({ data }: HistoricalDataProps) {
       data: uniqueFreeCashFlow,
       chartColor: "var(--chart-1)",
       chartName: "Free Cash Flow",
-      valueColor: (v) =>
+      valueColor: (v: number) =>
         v >= 0 ? "var(--positive-text)" : "var(--negative-text)",
     },
   ].filter((s) => s.data.length > 0);
